@@ -39,7 +39,6 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 		if(optionalMemberVO.isEmpty()) {
 			responseDTO = new ResponseDTO(jwt,false);
 			//테스트로 자동 회원가입
-			memberManagementService.saveMember(authentication.getName(), "뭥뭥");
 			//json형식으로 토큰,회원가입 여부를 리턴
 			String jsonResponse = String.format("{\"token\":\"%s\",\"isMember\":%b}", responseDTO.getToken(), responseDTO.isMember());
 			response.getWriter().write(jsonResponse);
