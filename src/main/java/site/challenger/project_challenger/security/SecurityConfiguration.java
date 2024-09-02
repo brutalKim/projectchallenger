@@ -1,5 +1,6 @@
 package site.challenger.project_challenger.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -14,7 +15,7 @@ public class SecurityConfiguration {
 
 	private CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
 
-//	@Autowired
+	@Autowired
 	public SecurityConfiguration(CustomOAuth2SuccessHandler customOAuth2SuccessHandler) {
 		this.customOAuth2SuccessHandler = customOAuth2SuccessHandler;
 	}
