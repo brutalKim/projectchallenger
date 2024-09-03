@@ -33,7 +33,7 @@ public class SecurityConfiguration {
 		http.authorizeHttpRequests(auth -> {
 			auth.requestMatchers("/h2-console/**").permitAll();
 			//회원가입에 대해서는 모든 접근 허용
-			auth.requestMatchers("/signup/**").permitAll();
+			auth.requestMatchers("/member/signup/**").permitAll();
 			auth.anyRequest().authenticated();
 		}); // 모든 요청에 인증 요구
 
