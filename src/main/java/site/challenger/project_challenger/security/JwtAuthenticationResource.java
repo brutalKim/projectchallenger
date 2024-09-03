@@ -22,7 +22,7 @@ public class JwtAuthenticationResource {
 	public String authenticate(Authentication authentication) {
 		return new JwtResponse(createToken(authentication)).toString();
 	}
-
+	//jwt token 생성시 secretkey
 	private String createToken(Authentication authentication) {
 		var claims = JwtClaimsSet.builder().issuer("self").issuedAt(Instant.now())
 				.expiresAt(Instant.now().plusSeconds(60 * 15)).subject(authentication.getName())
