@@ -20,11 +20,8 @@ public class MemberManagementService {
 		return memberRepository.findById(id);
 	}
 	public void saveMember(String id, String nickname) {
-		String jwtString = getJWTString(id);
-		System.out.println(jwtString);
-		if(jwtString != null) {
-			Jwt decodedId = jwtDecoder.decode(jwtString);
-			System.out.println(decodedId.getTokenValue()+"@@@@@@@@@@@@@@@@@@@@@@@");
+		id= id.replace("{id=","").replace("}","");
+		if(id != null) {
 			Optional<MemberVO> optionalMemberVO = memberRepository.findById(id);
 			if(optionalMemberVO.isEmpty()) {
 				memberRepository.save(new MemberVO(id,nickname));
