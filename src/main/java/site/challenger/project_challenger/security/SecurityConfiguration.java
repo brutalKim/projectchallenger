@@ -1,24 +1,24 @@
 package site.challenger.project_challenger.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
+import lombok.AllArgsConstructor;
+
 @Configuration
+@AllArgsConstructor
 public class SecurityConfiguration {
 
 	private CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
 
-	@Autowired
-	public SecurityConfiguration(CustomOAuth2SuccessHandler customOAuth2SuccessHandler) {
-		this.customOAuth2SuccessHandler = customOAuth2SuccessHandler;
-	}
+	private UserDetailsService userDetailsService;
 
 	@Bean
 	public WebSecurityCustomizer webSecurityCustomizer() { // security를 적용하지 않을 리소스
@@ -31,15 +31,15 @@ public class SecurityConfiguration {
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
 		http.authorizeHttpRequests(auth -> {
-			auth.requestMatchers("/h2-console/**").permitAll();
-			//회원가입에 대해서는 모든 접근 허용
-			auth.requestMatchers("/member/signup/**").permitAll();
+			auth.requestMatchers("/1", "/h2-console/**").permitAll();
+			// 회원가입에 대해서는 모든 접근 허용
+			auth.requestMatchers("/member/signup/**").hasRole("GUEST");
 			auth.anyRequest().authenticated();
 		}); // 모든 요청에 인증 요구
 
 		http.sessionManagement(session -> {
 			session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-			// 세션 만들지도않고 사용도 안함
+			// 세션 만들지도않고 사용도 안함 STATELESS
 		});
 //		http.httpBasic(); // base64 기반 basic Authentication 사용안함
 		http.csrf().disable(); // csrf 불가
@@ -51,9 +51,10 @@ public class SecurityConfiguration {
 						userInfo -> userInfo.userService(oAuth2UserService()).oidcUserService(oidcUserService()))
 				.successHandler(customOAuth2SuccessHandler));
 
-		// 1. jwt 설정 OAuth2 resource server set
-		// 2. jwt decoder 정의해줘야함 맨밑
-		http.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
+		// 임시
+//		http.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
+
+		http.oauth2ResourceServer().jwt(jwt -> jwt.jwtAuthenticationConverter(customJwtAuthenticationConverter()));
 
 		return http.build();
 	}
@@ -98,5 +99,10 @@ public class SecurityConfiguration {
 //		// default strength value = 10 숫자를 올릴수록 복잡도가 올라감
 //		return new BCryptPasswordEncoder();
 //	}
+
+	@Bean
+	public JwtAuthenticationConverter customJwtAuthenticationConverter() {
+		return new CustomJwtAuthenticationConverter();
+	}
 
 }
