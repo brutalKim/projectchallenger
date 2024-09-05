@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -13,6 +12,7 @@ import org.springframework.stereotype.Component;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -37,18 +37,21 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 		jwt = jwt.replace("JwtResponse[token=", "");
 		jwt = jwt.replace("]", "");
 		if(optionalMemberVO.isEmpty()) {
+			//비회원일시 세션발급
+			HttpSession session = request.getSession(true);
+			//세션에 response 넣음
 			responseDTO = new ResponseDTO(jwt,false);
-			//테스트로 자동 회원가입
-			//json형식으로 토큰,회원가입 여부를 리턴
-			String jsonResponse = String.format("{\"token\":\"%s\",\"isMember\":%b}", responseDTO.getToken(), responseDTO.isMember());
-			response.getWriter().write(jsonResponse);
-	        response.getWriter().flush();
+			session.setAttribute("token", responseDTO);
+			response.sendRedirect("http://localhost:3000/authentication");
 		}else {
 			//json형식으로 토큰,회원가입 여부를 리턴
-			responseDTO = new ResponseDTO(jwt,true);;
-			String jsonResponse = String.format("{\"token\":\"%s\",\"isMember\":%b}", responseDTO.getToken(), responseDTO.isMember());
-			response.getWriter().write(jsonResponse);
-	        response.getWriter().flush();
+			responseDTO = new ResponseDTO(jwt,true);
+			//비회원일시 세션발급
+			HttpSession session = request.getSession(true);
+			//세션에 response 넣음
+			responseDTO = new ResponseDTO(jwt,true);
+			session.setAttribute("token", responseDTO);
+			response.sendRedirect("http://localhost:3000/authentication");
 		}
 	}
 	//reponse DTO

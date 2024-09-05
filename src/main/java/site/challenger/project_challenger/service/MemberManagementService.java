@@ -19,14 +19,16 @@ public class MemberManagementService {
 	public Optional<MemberVO> searchMember(String id){
 		return memberRepository.findById(id);
 	}
-	public void saveMember(String id, String nickname) {
+	public boolean saveMember(String id, String nickname) {
 		id= id.replace("{id=","").replace("}","");
 		if(id != null) {
 			Optional<MemberVO> optionalMemberVO = memberRepository.findById(id);
 			if(optionalMemberVO.isEmpty()) {
 				memberRepository.save(new MemberVO(id,nickname));
+				return true;
 			}
 		}
+		return false;
 	}
 	private String getJWTString (String token) {
 		if (token != null && token.startsWith("Bearer ")) {
