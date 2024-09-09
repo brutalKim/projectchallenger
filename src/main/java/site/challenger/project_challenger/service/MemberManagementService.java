@@ -15,6 +15,19 @@ public class MemberManagementService {
 	private final MemberRepository memberRepository;
 	private final JwtDecoder jwtDecoder;
 
+	public Optional<MemberVO> searchMember(String id){
+		id= id.replace("{id=","").replace("}","");
+		return memberRepository.findById(id);
+	}
+	public boolean saveMember(String id, String nickname) {
+		id= id.replace("{id=","").replace("}","");
+		if(id != null) {
+			Optional<MemberVO> optionalMemberVO = memberRepository.findById(id);
+			if(optionalMemberVO.isEmpty()) {
+				memberRepository.save(new MemberVO(id,nickname));
+				return true;
+
+
 	public Optional<Member> searchMember(String id) {
 		return memberRepository.findById(id);
 	}
@@ -26,8 +39,10 @@ public class MemberManagementService {
 			Optional<Member> optionalMemberVO = memberRepository.findById(id);
 			if (optionalMemberVO.isEmpty()) {
 				memberRepository.save(new Member(id, nickname));
+
 			}
 		}
+		return false;
 	}
 
 	private String getJWTString(String token) {

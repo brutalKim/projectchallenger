@@ -37,6 +37,7 @@ public class SecurityConfiguration {
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
+
 		return http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				// cors 설정 현재 3000허용
 				.cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -63,6 +64,9 @@ public class SecurityConfiguration {
 				.oauth2Login(oauth -> oauth.successHandler(customOAuth2SuccessHandler))
 
 				.build();
+
+
+
 
 	}
 

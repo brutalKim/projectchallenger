@@ -39,4 +39,3 @@ public class SignupController {
 		private String nickname;
 	}
 }
- 
