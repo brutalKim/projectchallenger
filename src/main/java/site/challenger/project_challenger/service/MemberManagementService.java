@@ -17,6 +17,7 @@ public class MemberManagementService {
 	private final MemberRepository memberRepository;
 	private final JwtDecoder jwtDecoder;
 	public Optional<MemberVO> searchMember(String id){
+		id= id.replace("{id=","").replace("}","");
 		return memberRepository.findById(id);
 	}
 	public boolean saveMember(String id, String nickname) {

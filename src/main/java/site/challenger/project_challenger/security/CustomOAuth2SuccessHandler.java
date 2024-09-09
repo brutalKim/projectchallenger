@@ -13,6 +13,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -32,24 +33,22 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 		// 인증 성공 시 실행할 커스텀 로직을 여기에 작성
 		logger.info("CustomOAuth2SuccessHandler 호출됨. 인증 성공!");
 		Optional<MemberVO> optionalMemberVO = memberManagementService.searchMember(authentication.getName());
-		ResponseDTO responseDTO;
 		String jwt = jwtAuthenticationResource.authenticate(authentication);
 		jwt = jwt.replace("JwtResponse[token=", "");
 		jwt = jwt.replace("]", "");
 		if(optionalMemberVO.isEmpty()) {
+			System.out.println("no member");
 			//비회원일시 세션발급
 			HttpSession session = request.getSession(true);
 			//세션에 response 넣음
-			responseDTO = new ResponseDTO(jwt,false);
+			ResponseDTO responseDTO = new ResponseDTO(jwt,false);
 			session.setAttribute("token", responseDTO);
 			response.sendRedirect("http://localhost:3000/authentication");
 		}else {
-			//json형식으로 토큰,회원가입 여부를 리턴
-			responseDTO = new ResponseDTO(jwt,true);
-			//비회원일시 세션발급
+			System.out.println("is member");
 			HttpSession session = request.getSession(true);
 			//세션에 response 넣음
-			responseDTO = new ResponseDTO(jwt,true);
+			ResponseDTO responseDTO = new ResponseDTO(jwt,true);
 			session.setAttribute("token", responseDTO);
 			response.sendRedirect("http://localhost:3000/authentication");
 		}
@@ -58,7 +57,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 	//아필요없노 이거 ㅅㅂㅋㅋ
 	@Getter
 	@Setter
-	public class ResponseDTO{
+	public static class ResponseDTO{
 		private String token;
 		private boolean isMember;
 		public ResponseDTO(String token,boolean isMember) {

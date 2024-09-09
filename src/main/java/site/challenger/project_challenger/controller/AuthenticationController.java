@@ -36,4 +36,9 @@ public class AuthenticationController {
 	public static class SignupDTO{
 		private String nickname;
 	}
-} 
+	@Getter
+	@Setter
+	public static class memberDTO{
+		private String nickname;
+	}
+}
