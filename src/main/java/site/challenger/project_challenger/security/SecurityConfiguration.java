@@ -1,24 +1,31 @@
 package site.challenger.project_challenger.security;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import site.challenger.project_challenger.filter.JwtTokenValidatorFilter;
 
 @Configuration
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class SecurityConfiguration {
 
-	private CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
+	private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
+	private final JwtTokenValidatorFilter jwtTokenValidatorFilter;
 
-	private UserDetailsService userDetailsService;
+	private static final String[] SECURED_URL = {};
+	private static final String[] OPEN_URL = { "/1", "/h2-console/**", "/oauth2/**", };
 
 	@Bean
 	public WebSecurityCustomizer webSecurityCustomizer() { // security를 적용하지 않을 리소스
@@ -30,79 +37,47 @@ public class SecurityConfiguration {
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-		http.authorizeHttpRequests(auth -> {
-			auth.requestMatchers("/1", "/h2-console/**").permitAll();
-			// 회원가입에 대해서는 모든 접근 허용
-			auth.requestMatchers("/member/signup/**").hasRole("GUEST");
-			auth.anyRequest().authenticated();
-		}); // 모든 요청에 인증 요구
+		return http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				// cors 설정 현재 3000허용
+				.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+				// csrf 설정 사용안함
+				.csrf(csrf -> csrf.disable())
+				// 필터 추가해야함
+				.addFilterBefore(jwtTokenValidatorFilter, OAuth2LoginAuthenticationFilter.class)
+				//
+				.authorizeHttpRequests(auth -> {
+					// 모든 허용
+					auth.requestMatchers(OPEN_URL).permitAll()
+							//
+							.requestMatchers("/member/signup/**").hasRole("GUEST")
+							//
+							.anyRequest().authenticated();
+				})
+				//
+				.headers(headers -> headers.frameOptions(fo -> fo.sameOrigin()))
+				// base 64 basic 로그인 허용안함
+				.httpBasic(hb -> hb.disable())
+				// 폼 로그인 허용 안함
+				.formLogin(fl -> fl.disable())
+				//
+				.oauth2Login(oauth -> oauth.successHandler(customOAuth2SuccessHandler))
 
-		http.sessionManagement(session -> {
-			session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-			// 세션 만들지도않고 사용도 안함 STATELESS
-		});
-//		http.httpBasic(); // base64 기반 basic Authentication 사용안함
-		http.csrf().disable(); // csrf 불가
-		http.headers().frameOptions().sameOrigin(); // h2-console 허용하기위함 production 시에는 없애야할 수 있음
+				.build();
 
-		// OAuth2 custom
-		http.oauth2Login(oauth2Login -> oauth2Login
-				.userInfoEndpoint(
-						userInfo -> userInfo.userService(oAuth2UserService()).oidcUserService(oidcUserService()))
-				.successHandler(customOAuth2SuccessHandler));
-
-		// 임시
-//		http.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
-
-		http.oauth2ResourceServer().jwt(jwt -> jwt.jwtAuthenticationConverter(customJwtAuthenticationConverter()));
-
-		return http.build();
 	}
-	// OAuth2 custom
 
+	// 09.09
 	@Bean
-	public CustomOAuth2UserService oAuth2UserService() {
-		return new CustomOAuth2UserService();
+	public CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration config = new CorsConfiguration();
+		config.setAllowedOrigins(List.of("http://localhost:3000")); // 허용할 출처
+		config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE")); // 허용할 HTTP 메서드
+		config.addAllowedHeader("*"); // 허용할 헤더
+		config.setAllowCredentials(true); // 모든 인증 허용
+		config.setExposedHeaders(Arrays.asList("Authorization")); // 이 헤더로 보낼것임 jwt
+		config.setMaxAge(3600L); // cors허용 캐싱시간
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", config); // 모든 경로에 대해 CORS 설정 적용
+		return source;
 	}
-
-	@Bean
-	public OidcUserService oidcUserService() {
-		return new OidcUserService();
-	}
-
-	// h2 db
-//	@Bean
-//	public DataSource dataSource() {
-//
-//		// .addScript(JdbcDaoImpl.DEFAULT_USER_SCHEMA_DDL_LOCATION)
-//		return new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.H2).build();
-//	}
-
-//	@Bean
-//	public UserDetailsService userDeatailService(DataSource dataSource) {
-//
-//		var user = User.withUsername("insu").password("insu").passwordEncoder(str -> passwordEncoder().encode(str))
-//				.roles("USER").build();
-//
-//		var admin = User.withUsername("admin").password("admin").passwordEncoder(str -> passwordEncoder().encode(str))
-//				.roles("ADMIN", "USER").build();
-//
-//		var jdbcUserDetailsManager = new JdbcUserDetailsManager(dataSource);
-//		jdbcUserDetailsManager.createUser(user);
-//		jdbcUserDetailsManager.createUser(admin);
-//		return jdbcUserDetailsManager;
-//	}
-
-//	@Bean
-//	public BCryptPasswordEncoder passwordEncoder() {
-//
-//		// default strength value = 10 숫자를 올릴수록 복잡도가 올라감
-//		return new BCryptPasswordEncoder();
-//	}
-
-	@Bean
-	public JwtAuthenticationConverter customJwtAuthenticationConverter() {
-		return new CustomJwtAuthenticationConverter();
-	}
-
 }
