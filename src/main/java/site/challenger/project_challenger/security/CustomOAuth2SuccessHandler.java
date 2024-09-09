@@ -21,6 +21,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.Getter;
 // <<<<<<< insu0909-1
 // =======
 // import jakarta.servlet.http.HttpSession;
@@ -28,6 +29,7 @@ import jakarta.servlet.http.HttpServletResponse;
 // import lombok.Getter;
 // >>>>>>> main
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 @Component
 @RequiredArgsConstructor
@@ -97,20 +99,8 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 		response.addCookie(jwtCookie);
 		// 쿠키 >
 
-// <<<<<<< insu0909-1
-// 		logger.info("\n IP: {}\n Body: {} \n", request.getRemoteAddr(),
-// 				jwtToken.substring(jwtToken.indexOf('.') + 1, jwtToken.lastIndexOf('.')));
-// 
-// 	// reponse DTO
-// 	// 아필요없노 이거 ㅅㅂㅋㅋ
-// 	@Getter
-// 	@Setter
-// 	public static class ResponseDTO{
-
-// 	public class ResponseDTO {
-// 		private String token;
-// 		private boolean isMember;
-// >>>>>>> main
+		logger.info("\n IP: {}\n Body: {} \n", request.getRemoteAddr(),
+				jwtToken.substring(jwtToken.indexOf('.') + 1, jwtToken.lastIndexOf('.')));
 
 		response.sendRedirect("/3");
 
@@ -124,4 +114,11 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 		return String.join(",", authoritiesSet);
 	}
 
+}
+
+@Getter
+@Setter
+class ResponseDTO {
+	private String token;
+	private boolean isMember;
 }
