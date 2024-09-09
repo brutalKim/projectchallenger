@@ -15,12 +15,9 @@ public class LoginController2 {
 		return "HI, ";
 	}
 	@GetMapping("/3")
-	public String loginFailed2(Authentication authentication) {
-		System.out.println(authentication);
-		System.out.println(authentication.getName());
-		System.out.println("logglgogloFaililil");
+	public String loginFailed2() {
 
-		return "HI, Faileddsadasdas";
+		return "로그인 성공ㅇㅇㅇㅇㅇ";
 	}
 
 }
