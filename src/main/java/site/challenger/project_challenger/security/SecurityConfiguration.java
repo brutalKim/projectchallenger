@@ -29,8 +29,11 @@ public class SecurityConfiguration {
 
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
 		http.authorizeHttpRequests(auth -> {
+			auth.requestMatchers("/h2-console/**").permitAll();
+			//회원가입에 대해서는 모든 접근 허용
+			auth.requestMatchers("/member/signup/**").permitAll();
+			auth.requestMatchers("/authentication/**").permitAll();
 			auth.requestMatchers("/1", "/h2-console/**").permitAll();
 			// 회원가입에 대해서는 모든 접근 허용
 			auth.requestMatchers("/member/signup/**").hasRole("GUEST");
@@ -50,6 +53,12 @@ public class SecurityConfiguration {
 				.userInfoEndpoint(
 						userInfo -> userInfo.userService(oAuth2UserService()).oidcUserService(oidcUserService()))
 				.successHandler(customOAuth2SuccessHandler));
+
+		
+		// 1. jwt 설정 OAuth2 resource server set
+		// 2. jwt decoder 정의해줘야함 맨밑
+		http.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
+
 
 		// 임시
 //		http.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
