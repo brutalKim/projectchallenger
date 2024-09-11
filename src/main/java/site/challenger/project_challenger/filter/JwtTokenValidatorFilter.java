@@ -1,7 +1,6 @@
 package site.challenger.project_challenger.filter;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,12 +32,13 @@ public class JwtTokenValidatorFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
+		// 헤더로 받을 때
 //		String jwtToken = resolveToken(request);
 		String jwtToken = resolveTokenFromCookies(request);
 
 		if (null != jwtToken) {
 			// 토큰이 있으면 검증
-			
+
 			String body = jwtToken.substring(jwtToken.indexOf('.') + 1, jwtToken.lastIndexOf('.'));
 			try {
 				Jwt jwt = jwtDecoder.decode(jwtToken);
@@ -67,7 +67,7 @@ public class JwtTokenValidatorFilter extends OncePerRequestFilter {
 		return super.shouldNotFilter(request);
 	}
 
-	// 쿠키 읽기 임시
+	// 쿠키 읽기
 	private String resolveTokenFromCookies(HttpServletRequest request) {
 		if (request.getCookies() != null) {
 			for (Cookie cookie : request.getCookies()) {
@@ -80,7 +80,7 @@ public class JwtTokenValidatorFilter extends OncePerRequestFilter {
 	}
 
 	// 헤더 읽기
-	public String resolveToken(HttpServletRequest request) {
+	private String resolveToken(HttpServletRequest request) {
 		String bearerToken = request.getHeader("Authorization");
 		if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
 			return bearerToken.substring(7);

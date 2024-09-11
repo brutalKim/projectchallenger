@@ -1,8 +1,8 @@
 package site.challenger.project_challenger.controller;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpSession;
@@ -14,6 +14,15 @@ public class LoginController2 {
 		System.out.println(authentication);
 		return "HI, ";
 	}
+
+	@GetMapping("/2")
+	public ResponseEntity<String> test(HttpSession session, Authentication authentication) {
+		System.out.println(authentication);
+		var a = new ResponseEntity<String>(200);
+
+		return a
+	}
+
 	@GetMapping("/3")
 	public String loginFailed2() {
 
