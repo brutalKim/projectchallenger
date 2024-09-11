@@ -32,12 +32,12 @@ public class Users {
     private Long no;
 
     @Column(nullable = false, length = 255)
-    private String id;
+    private String uid;
 
     @Column(nullable = false, length = 45)
     private String nickname;
 
-    @Column(nullable = false, length = 255)
+    @Column(nullable = true, length = 255)
     private String email;
 
     @ManyToOne
@@ -59,7 +59,7 @@ public class Users {
     
     @Builder
     public Users(String id, String nickname, String email, OauthRef oauthRef, LocationRef locationRef, Boolean enable) {
-    	this.id = id;
+    	this.uid = id;
     	this.nickname = nickname;
     	this.email = email;
     	this.locationRef = locationRef;
