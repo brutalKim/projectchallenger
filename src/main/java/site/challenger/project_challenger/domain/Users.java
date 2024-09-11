@@ -27,14 +27,14 @@ public class Users {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long no;
 
-	@Column(nullable = false, length = 255)
-	private String uid;
+    @Column(nullable = false, length = 255)
+    private String uid;
 
 	@Column(nullable = false, length = 45)
 	private String nickname;
 
-	@Column(nullable = false, length = 255)
-	private String email;
+    @Column(nullable = true, length = 255)
+    private String email;
 
 	@ManyToOne
 	@JoinColumn(name = "oauth_ref_no", nullable = false)
@@ -47,19 +47,18 @@ public class Users {
 	@Column(nullable = false)
 	private Boolean enable;
 
-	private LocalDateTime latestLoginDate;
-
-	// insert 시 시간 기록
-	@CreationTimestamp
-	private LocalDateTime signupDate;
-
-	@Builder
-	public Users(String uid, String nickname, String email, OauthRef oauthRef, LocationRef locationRef,
-			Boolean enable) {
-		this.uid = uid;
-		this.nickname = nickname;
-		this.email = email;
-		this.locationRef = locationRef;
-		this.enable = enable;
-	}
+    private LocalDateTime latestLoginDate;
+    
+    //insert 시 시간 기록
+    @CreationTimestamp
+    private LocalDateTime signupDate;
+    
+    @Builder
+    public Users(String id, String nickname, String email, OauthRef oauthRef, LocationRef locationRef, Boolean enable) {
+    	this.uid = id;
+    	this.nickname = nickname;
+    	this.email = email;
+    	this.locationRef = locationRef;
+    	this.enable = enable;
+    }
 }
