@@ -17,52 +17,49 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-
 @Getter
 @NoArgsConstructor
 @Entity
-@Table(name = "users", uniqueConstraints = {
-    @UniqueConstraint(columnNames = "id"),
-    @UniqueConstraint(columnNames = "email"),
-    @UniqueConstraint(columnNames = "nickname")
-})
+@Table(name = "users", uniqueConstraints = { @UniqueConstraint(columnNames = "uid"),
+		@UniqueConstraint(columnNames = "email"), @UniqueConstraint(columnNames = "nickname") })
 public class Users {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long no;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long no;
 
-    @Column(nullable = false, length = 255)
-    private String id;
+	@Column(nullable = false, length = 255)
+	private String uid;
 
-    @Column(nullable = false, length = 45)
-    private String nickname;
+	@Column(nullable = false, length = 45)
+	private String nickname;
 
-    @Column(nullable = false, length = 255)
-    private String email;
+	@Column(nullable = false, length = 255)
+	private String email;
 
-    @ManyToOne
-    @JoinColumn(name = "oauth_ref_no", nullable = false)
-    private OauthRef oauthRef;
+	@ManyToOne
+	@JoinColumn(name = "oauth_ref_no", nullable = false)
+	private OauthRef oauthRef;
 
-    @ManyToOne
-    @JoinColumn(name = "location_ref_no", nullable = false)
-    private LocationRef locationRef;
+	@ManyToOne
+	@JoinColumn(name = "location_ref_no", nullable = false)
+	private LocationRef locationRef;
 
-    @Column(nullable = false)
-    private Boolean enable;
+	@Column(nullable = false)
+	private Boolean enable;
 
-    private LocalDateTime latestLoginDate;
-    
-    //insert 시 시간 기록
-    @CreationTimestamp
-    private LocalDateTime signupDate;
-    
-    @Builder
-    public Users(String id, String nickname, String email, OauthRef oauthRef, LocationRef locationRef, Boolean enable) {
-    	this.id = id;
-    	this.nickname = nickname;
-    	this.email = email;
-    	this.locationRef = locationRef;
-    	this.enable = enable;
-    }
+	private LocalDateTime latestLoginDate;
+
+	// insert 시 시간 기록
+	@CreationTimestamp
+	private LocalDateTime signupDate;
+
+	@Builder
+	public Users(String uid, String nickname, String email, OauthRef oauthRef, LocationRef locationRef,
+			Boolean enable) {
+		this.uid = uid;
+		this.nickname = nickname;
+		this.email = email;
+		this.locationRef = locationRef;
+		this.enable = enable;
+	}
 }

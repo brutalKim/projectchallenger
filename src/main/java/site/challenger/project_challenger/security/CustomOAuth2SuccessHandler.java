@@ -1,16 +1,10 @@
 package site.challenger.project_challenger.security;
 
 import java.io.IOException;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
@@ -30,12 +24,17 @@ import lombok.Getter;
 // >>>>>>> main
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import site.challenger.project_challenger.constants.MyRole;
+import site.challenger.project_challenger.constants.SecurityConstants;
+import site.challenger.project_challenger.repository.UserRepository;
 
 @Component
 @RequiredArgsConstructor
 public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler {
 	private static Logger logger = LoggerFactory.getLogger(CustomOAuth2SuccessHandler.class);
 	private final JwtEncoder jwtEncoder;
+	private final UserRepository userRepository;
+	private final JwtProvider jwtProvider;
 
 // Oauth2 인증을 하면 얘가 처리함 정보->
 	@Override
@@ -68,27 +67,44 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 // 		ResponseDTO responseDTO;
 // >>>>>>> main
 
-		String id = authentication.getName();
-		String email;
-		LocalDateTime now = LocalDateTime.now();
+		String uid = authentication.getName();
 
-		var claims = JwtClaimsSet.builder()
-				// 발급자
-				.issuer("project Challenge")
-				// 발급시간
-				.issuedAt(Instant.now())
-				// 만료 시간
-				.expiresAt(Instant.now().plusSeconds(60 * 15))
-				// subject - username - getName 한걸로 데이터베이스에서 꺼내야함 primary key를
-				.subject(authentication.getName())
-				// 닉넴, 지역번호 등등, 꺼내놓으면 편할 정보 다 꺼내놓는게 좋음
-//				.claim("nick", authentication)
-				// 이거 데이터 베이스에서 꺼내야함
-				.claim("authorities", "역할 권한").build();
+		boolean isUser = userRepository.existsByUid(uid);
+		JwtClaimsSet claims;
+		if (isUser) {
+			// 우리 유저인경우
+			claims = jwtProvider.forUser(uid);
+		} else {
+			// 우리 유저가 아닌경우
+			int oauthRef = -1;
+			if (authentication.toString().contains("kakao")) {
+				oauthRef = MyRole.OAUTH_REF_KAKAO;
+			} else if (authentication.toString().contains("google")) {
+				oauthRef = MyRole.OAUTH_REF_GOOGLE;
+			} else if (authentication.toString().contains("naver")) {
+				oauthRef = MyRole.OAUTH_REF_NAVER;
+			}
+			claims = jwtProvider.forGuest(uid, oauthRef);
+
+		}
+
+//		var claims = JwtClaimsSet.builder()
+//				// 발급자
+//				.issuer("project Challenge")
+//				// 발급시간
+//				.issuedAt(Instant.now())
+//				// 만료 시간
+//				.expiresAt(Instant.now().plusSeconds(60 * 15))
+//				// subject - username - getName 한걸로 데이터베이스에서 꺼내야함 primary key를
+//				.subject(authentication.getName())
+//				// 닉넴, 지역번호 등등, 꺼내놓으면 편할 정보 다 꺼내놓는게 좋음
+////				.claim("nick", authentication)
+//				// 이거 데이터 베이스에서 꺼내야함
+//				.claim("authorities", MyRole.ROLE_GUEST).build();
 
 		var jwtToken = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-// 		지우지말것
-//		response.addHeader(SecurityConstants.JWT_HEADER, "Bearer " + JwtToken);
+		// 헤더에 추가
+		response.addHeader(SecurityConstants.JWT_HEADER, "Bearer " + jwtToken);
 
 		// < 쿠키 테스트
 		Cookie jwtCookie = new Cookie("JWT_TOKEN", jwtToken);
@@ -104,14 +120,6 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
 		response.sendRedirect("/3");
 
-	}
-
-	private String populateAuthorities(Collection<? extends GrantedAuthority> collection) {
-		Set<String> authoritiesSet = new HashSet<>();
-		for (GrantedAuthority authority : collection) {
-			authoritiesSet.add(authority.getAuthority());
-		}
-		return String.join(",", authoritiesSet);
 	}
 
 }

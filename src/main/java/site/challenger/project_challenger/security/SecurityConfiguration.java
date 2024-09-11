@@ -15,6 +15,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import lombok.RequiredArgsConstructor;
+import site.challenger.project_challenger.constants.MyRole;
+import site.challenger.project_challenger.constants.SecurityConstants;
 import site.challenger.project_challenger.filter.JwtTokenValidatorFilter;
 
 @Configuration
@@ -49,9 +51,9 @@ public class SecurityConfiguration {
 					// 모든 허용
 					auth.requestMatchers(OPEN_URL).permitAll()
 							//
-							.requestMatchers("/member/signup/**").hasRole("GUEST")
+							.requestMatchers("/member/signup/**", "/2").hasRole(MyRole.GUEST)
 							//
-							.anyRequest().authenticated();
+							.anyRequest().hasAnyRole(MyRole.USER, MyRole.ADMIN);
 				})
 				//
 				.headers(headers -> headers.frameOptions(fo -> fo.sameOrigin()))
@@ -74,7 +76,7 @@ public class SecurityConfiguration {
 		config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE")); // 허용할 HTTP 메서드
 		config.addAllowedHeader("*"); // 허용할 헤더
 		config.setAllowCredentials(true); // 모든 인증 허용
-		config.setExposedHeaders(Arrays.asList("Authorization")); // 이 헤더로 보낼것임 jwt
+		config.setExposedHeaders(Arrays.asList(SecurityConstants.JWT_HEADER)); // 이 헤더로 보낼것임 jwt
 		config.setMaxAge(3600L); // cors허용 캐싱시간
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", config); // 모든 경로에 대해 CORS 설정 적용
