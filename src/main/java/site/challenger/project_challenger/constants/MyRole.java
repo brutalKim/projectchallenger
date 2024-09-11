@@ -19,4 +19,12 @@ public class MyRole {
 	public static final int READ_NUM = 1;
 	public static final int WRITE_NUM = 2;
 
+	public static final int OAUTH_REF_NAVER = 1;
+	public static final int OAUTH_REF_KAKAO = 2;
+	public static final int OAUTH_REF_GOOGLE = 3;
+
+	public static final String OAUTH_REF_1 = "NAVER";
+	public static final String OAUTH_REF_2 = "KAKAO";
+	public static final String OAUTH_REF_3 = "GOOGLE";
+
 }

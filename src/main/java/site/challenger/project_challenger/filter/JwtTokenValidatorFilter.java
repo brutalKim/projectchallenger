@@ -32,6 +32,7 @@ public class JwtTokenValidatorFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
+		// 헤더로 받을 때
 //		String jwtToken = resolveToken(request);
 		String jwtToken = resolveTokenFromCookies(request);
 
