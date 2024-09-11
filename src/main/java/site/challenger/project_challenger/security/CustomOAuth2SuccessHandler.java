@@ -66,9 +66,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 // 		Optional<Member> optionalMemberVO = memberManagementService.searchMember(authentication.getName());
 // 		ResponseDTO responseDTO;
 // >>>>>>> main
-
 		String uid = authentication.getName();
-
 		boolean isUser = userRepository.existsByUid(uid);
 		JwtClaimsSet claims;
 		if (isUser) {
@@ -76,16 +74,15 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 			claims = jwtProvider.forUser(uid);
 		} else {
 			// 우리 유저가 아닌경우
-			int oauthRef = -1;
+			int oauthRef = 3;
 			if (authentication.toString().contains("kakao")) {
 				oauthRef = MyRole.OAUTH_REF_KAKAO;
 			} else if (authentication.toString().contains("google")) {
 				oauthRef = MyRole.OAUTH_REF_GOOGLE;
-			} else if (authentication.toString().contains("naver")) {
+			} else {
 				oauthRef = MyRole.OAUTH_REF_NAVER;
 			}
 			claims = jwtProvider.forGuest(uid, oauthRef);
-
 		}
 
 //		var claims = JwtClaimsSet.builder()
@@ -98,7 +95,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 //				// subject - username - getName 한걸로 데이터베이스에서 꺼내야함 primary key를
 //				.subject(authentication.getName())
 //				// 닉넴, 지역번호 등등, 꺼내놓으면 편할 정보 다 꺼내놓는게 좋음
-////				.claim("nick", authentication)
+//				.claim("nick", authentication)
 //				// 이거 데이터 베이스에서 꺼내야함
 //				.claim("authorities", MyRole.ROLE_GUEST).build();
 
@@ -117,16 +114,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
 		logger.info("\n IP: {}\n Body: {} \n", request.getRemoteAddr(),
 				jwtToken.substring(jwtToken.indexOf('.') + 1, jwtToken.lastIndexOf('.')));
-
-		response.sendRedirect("/3");
-
+		System.out.println(jwtToken);
+		response.sendRedirect("/1");
 	}
-
-}
-
-@Getter
-@Setter
-class ResponseDTO {
-	private String token;
-	private boolean isMember;
 }

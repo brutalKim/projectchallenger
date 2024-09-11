@@ -8,6 +8,8 @@ INSERT INTO users_authority_ref (authority) VALUES('WRITE');
 INSERT INTO OAUTH_REF (type) VALUES('NAVER');
 INSERT INTO OAUTH_REF (type) VALUES('KAKAO');
 INSERT INTO OAUTH_REF (type) VALUES('GOOGLE');
+INSERT INTO OAUTH_REF (type) VALUES('NONE');
+
 
 insert into location_ref(opt1,opt2) values('서울', '전체');
 insert into location_ref(opt1,opt2) values('서울', '종로구');

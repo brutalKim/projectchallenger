@@ -15,17 +15,8 @@ public class LoginController2 {
 		return "HI, ";
 	}
 
-	@GetMapping("/2")
-	public ResponseEntity<String> test(HttpSession session, Authentication authentication) {
-		System.out.println(authentication);
-		var a = new ResponseEntity<String>(200);
-
-		return a
-	}
-
 	@GetMapping("/3")
 	public String loginFailed2() {
-
 		return "로그인 성공ㅇㅇㅇㅇㅇ";
 	}
 

@@ -33,22 +33,19 @@ public class JwtTokenValidatorFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 		// 헤더로 받을 때
-//		String jwtToken = resolveToken(request);
-		String jwtToken = resolveTokenFromCookies(request);
-
+		String jwtToken = resolveToken(request);
+		//String jwtToken = resolveTokenFromCookies(request);
+		System.out.println(jwtToken);
 		if (null != jwtToken) {
 			// 토큰이 있으면 검증
-
 			String body = jwtToken.substring(jwtToken.indexOf('.') + 1, jwtToken.lastIndexOf('.'));
 			try {
 				Jwt jwt = jwtDecoder.decode(jwtToken);
-
 				String username = jwt.getSubject();
 				String authorities = jwt.getClaimAsString("authorities");
 				Authentication auth = new UsernamePasswordAuthenticationToken(username, null,
 						AuthorityUtils.commaSeparatedStringToAuthorityList(authorities));
 				SecurityContextHolder.getContext().setAuthentication(auth);
-
 			} catch (Exception e) {
 				logger.info("\n IP: {}\n errorMessage: {}\n Body: {} \n", request.getRemoteAddr(), e.getMessage(),
 						body);
@@ -66,7 +63,7 @@ public class JwtTokenValidatorFilter extends OncePerRequestFilter {
 		//
 		return super.shouldNotFilter(request);
 	}
-
+	
 	// 쿠키 읽기
 	private String resolveTokenFromCookies(HttpServletRequest request) {
 		if (request.getCookies() != null) {
@@ -78,7 +75,6 @@ public class JwtTokenValidatorFilter extends OncePerRequestFilter {
 		}
 		return null;
 	}
-
 	// 헤더 읽기
 	private String resolveToken(HttpServletRequest request) {
 		String bearerToken = request.getHeader("Authorization");

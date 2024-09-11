@@ -58,6 +58,7 @@ public class Users {
     	this.uid = id;
     	this.nickname = nickname;
     	this.email = email;
+    	this.oauthRef = oauthRef;
     	this.locationRef = locationRef;
     	this.enable = enable;
     }
