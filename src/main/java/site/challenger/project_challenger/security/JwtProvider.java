@@ -39,7 +39,6 @@ public class JwtProvider {
 				.claim("oauthRef", oauthRef)
 				//
 				.claim("authorities", MyRole.ROLE_GUEST).build();
-
 		return claims;
 	}
 

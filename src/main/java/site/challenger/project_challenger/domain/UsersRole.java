@@ -7,6 +7,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.Builder;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -27,4 +29,9 @@ public class UsersRole {
     @ManyToOne
     @JoinColumn(name = "user_role_ref_no", nullable = false)
     private UserRoleRef userRoleRef;
+    @Builder
+    public UsersRole(Users user, UserRoleRef userRoleRef) {
+    	this.user = user;
+    	this.userRoleRef = userRoleRef;
+    }
 }
