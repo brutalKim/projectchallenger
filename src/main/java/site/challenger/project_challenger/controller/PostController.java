@@ -23,6 +23,6 @@ public class PostController {
 	public ResponseEntity<ResDTO> writePost(Authentication authentication, @RequestBody PostWriteReqDTO req) {
 		Long userId = Long.parseLong(authentication.getName());
 		ResDTO res = postManagementService.writePost(new PostWriteServiceReqDTO(userId,req.getContent()));
-		return new ResponseEntity<ResDTO>(res,HttpStatus.OK);
+		return new ResponseEntity<ResDTO>(res,res.getStatus());
 	}
 }

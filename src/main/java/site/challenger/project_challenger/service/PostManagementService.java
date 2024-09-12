@@ -2,6 +2,7 @@ package site.challenger.project_challenger.service;
 
 import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,10 +29,10 @@ public class PostManagementService {
 			if(writer.isPresent()) {
 				Post newPost = new Post(writer.get(),content);
 				postRepository.save(newPost);
-				res = new ResDTO(200,"성공");
+				res = new ResDTO(HttpStatus.OK,"성공");
 			}
 		}catch(Exception e) {
-			res = new ResDTO(500,"서버 내부오류");
+			res = new ResDTO(HttpStatus.CONFLICT,"서버 내부오류");
 		}finally {
 			return res;
 		}
