@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import site.challenger.project_challenger.domain.Post;
 import site.challenger.project_challenger.domain.Users;
+
 import site.challenger.project_challenger.dto.ResDTO;
 import site.challenger.project_challenger.dto.post.PostWriteServiceReqDTO;
 import site.challenger.project_challenger.repository.PostRepository;
@@ -19,6 +20,7 @@ import site.challenger.project_challenger.repository.UserRepository;
 public class PostManagementService {
 	private final PostRepository postRepository;
 	private final UserRepository userRepository;
+
 	public ResDTO writePost(PostWriteServiceReqDTO req) {
 		ResDTO res = null;
 		Long writerId = req.getWriterId();
@@ -28,12 +30,19 @@ public class PostManagementService {
 			if(writer.isPresent()) {
 				Post newPost = new Post(writer.get(),content);
 				postRepository.save(newPost);
+
 				res = new ResDTO(200,"성공");
 			}
 		}catch(Exception e) {
 			res = new ResDTO(500,"서버 내부오류");
 		}finally {
 			return res;
+				status = true;
+			}
+		}catch(Exception e) {
+			status = false;
+		}finally {
+			return status;
 		}
 	}
 	

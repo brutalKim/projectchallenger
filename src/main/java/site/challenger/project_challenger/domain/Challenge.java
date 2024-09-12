@@ -11,38 +11,46 @@ import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @NoArgsConstructor
 @Getter
+@Setter
 @Entity
 @Table(name = "challenge")
 public class Challenge {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long no;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long no;
 
-    @ManyToOne
-    @JoinColumn(name = "users_no", nullable = false)
-    private Users users;
+	@ManyToOne
+	@JoinColumn(name = "users_no", nullable = false)
+	private Users users;
 
-    @ManyToOne
-    @JoinColumn(name = "location_ref_no", nullable = false)
-    private LocationRef locationRef;
+	@Column(nullable = false)
+	private String title;
 
-    @Column(nullable = false)
-    private Long recommend;
-    
-    @Builder
-    public Challenge(Users user, LocationRef locationRef) {
-    	this.users = user;
-    	this.locationRef = locationRef;
-    	this.recommend = (long) 0;
-    }
-    public void incrementRecommend() {
-    	this.recommend++;
-    }
-    public void decrementRecommend() {
-    	this.recommend--;
-    }
+	@ManyToOne
+	@JoinColumn(name = "location_ref_no", nullable = false)
+	private LocationRef locationRef;
+
+	@Column(nullable = false)
+	private Long recommend;
+
+	@Builder
+	public Challenge(Users user, LocationRef locationRef, String title) {
+		this.users = user;
+		this.locationRef = locationRef;
+		this.title = title;
+		this.recommend = (long) 0;
+	}
+
+	public void incrementRecommend() {
+		this.recommend++;
+	}
+
+	public void decrementRecommend() {
+		this.recommend--;
+	}
 }

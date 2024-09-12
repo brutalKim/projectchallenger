@@ -34,7 +34,7 @@ public class JwtTokenValidatorFilter extends OncePerRequestFilter {
 			throws ServletException, IOException {
 		// 헤더로 받을 때
 		String jwtToken = resolveToken(request);
-		//String jwtToken = resolveTokenFromCookies(request);
+//		String jwtToken = resolveTokenFromCookies(request);
 		System.out.println(jwtToken);
 		if (null != jwtToken) {
 			// 토큰이 있으면 검증
@@ -54,7 +54,7 @@ public class JwtTokenValidatorFilter extends OncePerRequestFilter {
 
 		}
 		filterChain.doFilter(request, response);
-	}
+	} 
 
 	@Override
 	protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
@@ -63,7 +63,7 @@ public class JwtTokenValidatorFilter extends OncePerRequestFilter {
 		//
 		return super.shouldNotFilter(request);
 	}
-	
+
 	// 쿠키 읽기
 	private String resolveTokenFromCookies(HttpServletRequest request) {
 		if (request.getCookies() != null) {
@@ -75,6 +75,7 @@ public class JwtTokenValidatorFilter extends OncePerRequestFilter {
 		}
 		return null;
 	}
+
 	// 헤더 읽기
 	private String resolveToken(HttpServletRequest request) {
 		String bearerToken = request.getHeader("Authorization");
