@@ -52,6 +52,7 @@ public class SecurityConfiguration {
 					auth.requestMatchers(OPEN_URL).permitAll()
 							//
 							.requestMatchers("/authentication/signup/**").hasRole(MyRole.GUEST)
+							.requestMatchers("/post/**").hasRole(MyRole.USER)
 							//
 							.anyRequest().hasAnyRole(MyRole.USER, MyRole.ADMIN);
 				})
