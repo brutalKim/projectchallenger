@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import site.challenger.project_challenger.dto.authentication.SignupReqDTO;
 import site.challenger.project_challenger.dto.authentication.SignupResDTO;
 import site.challenger.project_challenger.dto.authentication.SignupServiceReqDTO;
+import site.challenger.project_challenger.security.JwtProvider;
 import site.challenger.project_challenger.service.UserManegementService;
 
 @RestController
@@ -21,6 +22,7 @@ import site.challenger.project_challenger.service.UserManegementService;
 public class AuthenticationController {
 	private final UserManegementService userManagementService;
 	private final JwtDecoder jwtDecoder;
+	private final JwtProvider jwtProovider;
 	@PostMapping("/signup")
 	public SignupResDTO signup(Authentication authentication, @RequestBody SignupReqDTO req,HttpServletRequest request) {
 		String authHeader = request.getHeader("Authorization");

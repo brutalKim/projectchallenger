@@ -8,6 +8,5 @@ import site.challenger.project_challenger.domain.Users;
 import site.challenger.project_challenger.domain.UsersAuthority;
 
 public interface UsersAuthorityRepository extends JpaRepository<UsersAuthority, Long> {
-
 	List<UsersAuthority> findByUser(Users user);
 }
