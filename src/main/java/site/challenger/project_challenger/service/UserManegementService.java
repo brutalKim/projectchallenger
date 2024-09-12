@@ -55,7 +55,7 @@ public class UserManegementService {
 				OauthRef oauthRef = OptionalOuathRef.get();
 				Users user = new Users(uid,nickname,null, oauthRef, locationRef , true);
 				userRepository.save(user);
-				Optional<UserRoleRef> optionalUserRoleRef = usersRoleRefRepository.findByRole("ROLE_GUEST");
+				Optional<UserRoleRef> optionalUserRoleRef = usersRoleRefRepository.findByRole("ROLE_USER");
 				UserRoleRef userRoleRef = optionalUserRoleRef.get();
 				usersRoleRepository.save(new UsersRole(user,userRoleRef));
 				String token = jwtTokenManagement.issueJwtToken(uid);

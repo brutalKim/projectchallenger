@@ -14,6 +14,7 @@ import site.challenger.project_challenger.domain.Users;
 import site.challenger.project_challenger.domain.UsersAuthority;
 import site.challenger.project_challenger.domain.UsersRole;
 import site.challenger.project_challenger.repository.UserRepository;
+import site.challenger.project_challenger.repository.UsersAuthorityRefRepository;
 import site.challenger.project_challenger.repository.UsersAuthorityRepository;
 import site.challenger.project_challenger.repository.UsersRoleRepository;
 
@@ -24,7 +25,8 @@ public class JwtProvider {
 	private final UserRepository userRepository;
 	private final UsersAuthorityRepository usersAuthorityRepository;
 	private final UsersRoleRepository usersRoleRepository;
-
+	private final UsersAuthorityRefRepository userAuthorityRefRepository;
+	 
 	public JwtClaimsSet forGuest(String uid, int oauthRef) {
 		JwtClaimsSet claims = JwtClaimsSet.builder()
 				//
@@ -49,7 +51,8 @@ public class JwtProvider {
 		List<UsersRole> userRoles = usersRoleRepository.findByUser(user);
 
 		String authorities = populateAuthorities(userAuthorities, userRoles);
-
+		
+		
 		JwtClaimsSet claims = JwtClaimsSet.builder()
 				//
 				.issuer("project Challenge")
@@ -60,7 +63,9 @@ public class JwtProvider {
 				//
 				.subject(user.getNo().toString())
 				//
-				.claim("authorities", authorities).build();
+				.claim("authorities", authorities)
+				.claim("nickname", user.getNickname())
+				.build();
 
 		return claims;
 	}
