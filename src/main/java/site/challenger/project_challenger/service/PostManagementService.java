@@ -12,6 +12,7 @@ import site.challenger.project_challenger.domain.Post;
 import site.challenger.project_challenger.domain.PostComment;
 import site.challenger.project_challenger.domain.PostRecommend;
 import site.challenger.project_challenger.domain.Users;
+
 import site.challenger.project_challenger.dto.ResDTO;
 import site.challenger.project_challenger.dto.post.PostCommentResDTO;
 import site.challenger.project_challenger.dto.post.PostDTO;
@@ -32,6 +33,7 @@ public class PostManagementService {
 	private final UserRepository userRepository;
 	private final PostRecommendRepository postRecommendRepository;
 	private final PostCommentRepository postCommentRepository;
+
 	public ResDTO writePost(PostWriteServiceReqDTO req) {
 		ResDTO res = null;
 		Long writerId = req.getWriterId();
@@ -47,7 +49,7 @@ public class PostManagementService {
 			res = new ResDTO(HttpStatus.CONFLICT,"서버 내부오류");
 		}finally {
 			return res;
-		}
+			}
 	}
 	public PostGetResDTO getByUserId(Long writerNo ,Long userNo) {
 		PostGetResDTO res = null;

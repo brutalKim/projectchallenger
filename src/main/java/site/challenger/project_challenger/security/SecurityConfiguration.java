@@ -26,7 +26,7 @@ public class SecurityConfiguration {
 	private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
 	private final JwtTokenValidatorFilter jwtTokenValidatorFilter;
 
-	private static final String[] SECURED_URL = {"/authentication/signup"};
+	private static final String[] SECURED_URL = { "/authentication/signup" };
 	private static final String[] OPEN_URL = { "/1", "/h2-console/**", "/oauth2/**", };
 
 	@Bean
@@ -52,6 +52,7 @@ public class SecurityConfiguration {
 					auth.requestMatchers(OPEN_URL).permitAll()
 							//
 							.requestMatchers("/authentication/signup/**").hasRole(MyRole.GUEST)
+							.requestMatchers("/post/**").hasRole(MyRole.USER)
 							//
 							.anyRequest().hasAnyRole(MyRole.USER, MyRole.ADMIN);
 				})
