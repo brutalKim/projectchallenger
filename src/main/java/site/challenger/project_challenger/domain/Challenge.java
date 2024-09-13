@@ -31,6 +31,9 @@ public class Challenge {
 	@Column(nullable = false)
 	private String title;
 
+	@Column(nullable = false)
+	private String content;
+
 	@ManyToOne
 	@JoinColumn(name = "location_ref_no", nullable = false)
 	private LocationRef locationRef;
@@ -39,10 +42,11 @@ public class Challenge {
 	private Long recommend;
 
 	@Builder
-	public Challenge(Users user, LocationRef locationRef, String title) {
+	public Challenge(Users user, LocationRef locationRef, String title, String content) {
 		this.users = user;
 		this.locationRef = locationRef;
 		this.title = title;
+		this.content = content;
 		this.recommend = (long) 0;
 	}
 

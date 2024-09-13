@@ -10,7 +10,7 @@ import site.challenger.project_challenger.domain.JwtModel;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public abstract class AbstarctRequestDTO {
+public class CommonRequestDTO {
 
 	private JwtModel jwtModel;
 
