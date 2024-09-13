@@ -136,6 +136,7 @@ public class PostManagementService {
 			return res;
 		}
 	}
+	/*
 	public PostCommentResDTO getComment(Long postNo) {
 		PostCommentResDTO res = null;
 		try {
@@ -146,5 +147,5 @@ public class PostManagementService {
 		}finally {
 			return res;
 		}
-	}
+	}*/
 }

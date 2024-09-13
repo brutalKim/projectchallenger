@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import lombok.RequiredArgsConstructor;<<<<<<< 0912
+import lombok.RequiredArgsConstructor;
 import site.challenger.project_challenger.dto.ResDTO;
 import site.challenger.project_challenger.dto.post.PostCommentReqDTO;
 import site.challenger.project_challenger.dto.post.PostCommentResDTO;
@@ -51,10 +51,10 @@ public class PostController {
 		Long writerNo = Long.parseLong(authentication.getName());
 		ResDTO res = postManagementService.writeComment(writerNo, req.getPostNo(), req.getContent());
 		return new ResponseEntity<ResDTO>(res,res.getStatus());
-	}
+	}/*
 	@GetMapping("/comment")
 	public ResponseEntity<PostCommentResDTO> Comment(@RequestParam Long postNo){
 		PostCommentResDTO res = postManagementService.getComment(postNo);
 		return new ResponseEntity<PostCommentResDTO>(res,res.getStatus());
-	}
+	}*/
 }
