@@ -21,4 +21,6 @@ public class PostRecommendPrimaryKey implements Serializable{
     	this.userNo = user.getNo();
     	this.postNo = post.getNo();
     }
+    public PostRecommendPrimaryKey() {
+    }
 }

@@ -25,9 +25,8 @@ public class PostRecommend {
 	private PostRecommendPrimaryKey postRecommendPrimaryKey;
     @ManyToOne
     @MapsId("userNo")  // 복합키에서 userNo와 연결
-    @JoinColumn(name = "user_no", insertable = false, updatable = false)
+    @JoinColumn(name = "recommend_users_no", insertable = false, updatable = false)
     private Users user;
-
     @ManyToOne
     @MapsId("postNo")  // 복합키에서 postNo와 연결
     @JoinColumn(name = "post_no", insertable = false, updatable = false)
@@ -43,5 +42,8 @@ public class PostRecommend {
         this.user = user;
         this.post = post;
         this.postRecommendPrimaryKey = new PostRecommendPrimaryKey(user,post); // 복합키 설정
+    }
+    public PostRecommendPrimaryKey getPK() {
+    	return this.postRecommendPrimaryKey;
     }
 }
