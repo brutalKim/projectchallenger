@@ -41,9 +41,15 @@ public class PostController {
 		return new ResponseEntity<String>("삭제 완료",res);
 	}
 	@GetMapping("")
-	public ResponseEntity<PostGetResDTO> getPost(@RequestParam Long writerId ,Authentication authentication) {
+	public ResponseEntity<PostGetResDTO> getPost(@RequestParam(required = false) Long writerId ,Authentication authentication) {
+		System.out.println("testing@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
 		Long userId = Long.parseLong(authentication.getName());
-		PostGetResDTO res = postManagementService.getByUserId(writerId,userId);
+		PostGetResDTO res= null;
+		if(writerId == null) {
+			res = postManagementService.getByUserId(userId,userId);
+		}else {
+			res = postManagementService.getByUserId(writerId,userId);
+		}
 		return new ResponseEntity<PostGetResDTO>(res,res.getStatus());
 	}
 	@GetMapping("/recommend")

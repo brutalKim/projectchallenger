@@ -2,8 +2,10 @@ package site.challenger.project_challenger.service;
 
 import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import lombok.RequiredArgsConstructor;
 import site.challenger.project_challenger.domain.LocationRef;
@@ -76,5 +78,9 @@ public class UserManegementService {
 	}
 	private boolean checkUser(String id) {
 		return userRepository.existsByUid(id);
+	}
+	public String login (Long userId) {
+		Users user = userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "There's no such user"));
+		return user.getNickname();
 	}
 }
