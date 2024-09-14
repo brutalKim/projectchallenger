@@ -4,6 +4,7 @@ package site.challenger.project_challenger.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,12 +28,17 @@ import site.challenger.project_challenger.service.PostManagementService;
 @RequestMapping("/post")
 public class PostController {
 	private final PostManagementService postManagementService;
-	@PostMapping("/write")
-
+	@PostMapping("")
 	public ResponseEntity<ResDTO> writePost(Authentication authentication, @RequestBody PostWriteReqDTO req) {
 		Long userId = Long.parseLong(authentication.getName());
 		ResDTO res = postManagementService.writePost(new PostWriteServiceReqDTO(userId,req.getContent()));
 		return new ResponseEntity<ResDTO>(res,res.getStatus());
+	}
+	@DeleteMapping("")
+	public ResponseEntity<String> deletePost(@RequestParam Long PostNo, Authentication authentication) {
+		Long userId = Long.parseLong(authentication.getName());
+		HttpStatus res = postManagementService.deletePost(PostNo, userId);
+		return new ResponseEntity<String>("삭제 완료",res);
 	}
 	@GetMapping("")
 	public ResponseEntity<PostGetResDTO> getPost(@RequestParam Long writerId ,Authentication authentication) {
@@ -51,10 +57,16 @@ public class PostController {
 		Long writerNo = Long.parseLong(authentication.getName());
 		ResDTO res = postManagementService.writeComment(writerNo, req.getPostNo(), req.getContent());
 		return new ResponseEntity<ResDTO>(res,res.getStatus());
-	}/*
+	}
 	@GetMapping("/comment")
 	public ResponseEntity<PostCommentResDTO> Comment(@RequestParam Long postNo){
 		PostCommentResDTO res = postManagementService.getComment(postNo);
 		return new ResponseEntity<PostCommentResDTO>(res,res.getStatus());
-	}*/
+	}
+	@DeleteMapping("/comment")
+	public ResponseEntity<String> deleteComment(@RequestParam Long commentNo, Authentication authentication){
+		Long writerNo = Long.parseLong(authentication.getName());
+		HttpStatus res = postManagementService.deleteComment(commentNo, writerNo);
+		return new ResponseEntity<String>("Comment삭제 완료",res);
+	}
 }
