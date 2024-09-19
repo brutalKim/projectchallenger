@@ -1,6 +1,7 @@
 package site.challenger.project_challenger.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -51,11 +52,34 @@ public class ChallengeController {
 
 	@GetMapping("/recommend/{chNo}")
 	public ResponseEntity<CommonResponseDTO<ChallengeResponseDTO>> recommendChallenge(HttpServletRequest request,
-			@PathVariable long chNo, @RequestParam(defaultValue = "false") boolean isRecommned) {
+			@PathVariable long chNo) {
 		JwtModel jwtModel = jwtParser.fromHeader(request);
 
 		CommonResponseDTO<ChallengeResponseDTO> responseDto = challengeService.recommendChallenge(jwtModel.getNo(),
-				chNo, isRecommned);
+				chNo);
+
+		return new ResponseEntity<CommonResponseDTO<ChallengeResponseDTO>>(responseDto, responseDto.getHttpStatus());
+	}
+
+//	 딜리트 기능 보류 
+	@DeleteMapping("/delete/{chNO}")
+	public ResponseEntity<CommonResponseDTO<ChallengeResponseDTO>> deleteChallenge(HttpServletRequest request,
+			@PathVariable long chNo) {
+		JwtModel jwtModel = jwtParser.fromHeader(request);
+
+		CommonResponseDTO<ChallengeResponseDTO> responseDto = challengeService.deleteChallenge(jwtModel.getNo(), chNo);
+
+		return new ResponseEntity<CommonResponseDTO<ChallengeResponseDTO>>(responseDto, responseDto.getHttpStatus());
+	}
+
+	@GetMapping("/subscribe/{chNo}")
+	public ResponseEntity<CommonResponseDTO<ChallengeResponseDTO>> subscribeChallenge(HttpServletRequest request,
+			@PathVariable long chNo) {
+
+		JwtModel jwtModel = jwtParser.fromHeader(request);
+
+		CommonResponseDTO<ChallengeResponseDTO> responseDto = challengeService.subscribeChallenge(jwtModel.getNo(),
+				chNo);
 
 		return new ResponseEntity<CommonResponseDTO<ChallengeResponseDTO>>(responseDto, responseDto.getHttpStatus());
 	}

@@ -17,7 +17,7 @@ import lombok.Setter;
 @Builder
 public class CommonResponseDTO<T> {
 	private HttpStatus httpStatus;
-	private String errorMessage;
+	private String message;
 	private String redirectUrl;
 	private boolean isSuccess;
 	private List<T> responseList;
