@@ -33,7 +33,6 @@ public class JwtProvider {
 				.issuer("project Challenge")
 				//
 				.issuedAt(Instant.now())
-				//
 				.expiresAt(Instant.now().plusSeconds(60 * 15))
 				//
 				.subject(uid)
@@ -59,7 +58,8 @@ public class JwtProvider {
 				//
 				.issuedAt(Instant.now())
 				//
-				.expiresAt(Instant.now().plusSeconds(60 * 15))
+				//테스트를 위해 토큰 만료시간 한시간으로 늘림
+				.expiresAt(Instant.now().plusSeconds(60 * 60))
 				//
 				.subject(user.getNo().toString())
 				//
@@ -74,7 +74,7 @@ public class JwtProvider {
 		Set<String> authoritiesSet = new HashSet<>();
 		for (UsersAuthority usersAuthority : userAuthorities) {
 			String auth = usersAuthority.getUsersAuthorityRef().getUserRoleRef();
-			authoritiesSet.add(auth);
+			authoritiesSet.add(auth); 
 		}
 		for (UsersRole usersRole : userRoles) {
 			String role = usersRole.getUserRoleRef().getRole();

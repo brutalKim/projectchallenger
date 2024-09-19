@@ -115,6 +115,10 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 		logger.info("\n IP: {}\n Body: {} \n", request.getRemoteAddr(),
 				jwtToken.substring(jwtToken.indexOf('.') + 1, jwtToken.lastIndexOf('.')));
 		System.out.println(jwtToken);
-		response.sendRedirect("/1");
+		if(isUser) {
+			response.sendRedirect("http://localhost:3000/main");
+		}else {
+			response.sendRedirect("http://localhost:3000/signup");
+		}
 	}
 }
