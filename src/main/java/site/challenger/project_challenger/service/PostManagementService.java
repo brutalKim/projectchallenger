@@ -15,6 +15,7 @@ import site.challenger.project_challenger.domain.PostComment;
 import site.challenger.project_challenger.domain.PostRecommend;
 import site.challenger.project_challenger.domain.Users;
 import site.challenger.project_challenger.dto.ResDTO;
+import site.challenger.project_challenger.dto.post.CommentWriteResDTO;
 import site.challenger.project_challenger.dto.post.PostCommentResDTO;
 import site.challenger.project_challenger.dto.post.PostDTO;
 import site.challenger.project_challenger.dto.post.PostGetResDTO;
@@ -69,8 +70,11 @@ public class PostManagementService {
 				Users user = optionalUser.get();
 				ArrayList<PostDTO> posts = postRepository.getPostByWriterAndUser(writer.getNo(),user.getNo());
 				for(PostDTO postDTO :posts) {
+					//덧글수
 					Long commentCount = postCommentRepository.countByPostNo(postDTO.getNo());
 					postDTO.setCommentCount(commentCount);
+					String writerNickname = userRepository.findById(postDTO.getUsersNo()).get().getNickname();
+					postDTO.setWriterNickname(writerNickname);
 				}
 				if(posts.size() == 0) {
 					res = new PostGetResDTO(HttpStatus.NOT_FOUND,writer.getNickname()+"이 작성한 글을 찾을 수 없습니다.",null);
@@ -126,26 +130,28 @@ public class PostManagementService {
 	}
 	//comment 작성
 	@Transactional
-	public ResDTO writeComment(Long writerNo,Long postNo ,String content) {
-		ResDTO res = null;
+	public CommentWriteResDTO writeComment(Long writerNo,Long postNo ,String content) {
+		CommentWriteResDTO res = null;
 		try {
 			Optional<Users> optionalWriter = userRepository.findById(writerNo);
 			Optional<Post> optionalPost = postRepository.findById(postNo);
 			if(optionalWriter.isPresent() && optionalPost.isPresent()) {
 				Users user = optionalWriter.get();
 				Post post = optionalPost.get();
+				//testing
 				PostComment postComment = new PostComment(user,post,content);
 				post.addComment(postComment);
 				postCommentRepository.save(postComment);
 				postRepository.save(post);
-				res = new ResDTO(HttpStatus.CREATED,"작성 성공");
+				Long commentCount = (long)postRepository.findById(postNo).get().getComments().size();
+				res = new CommentWriteResDTO(HttpStatus.CREATED,"작성 성공",commentCount);
 			}else if(optionalWriter.isEmpty()){
-				res = new ResDTO(HttpStatus.BAD_REQUEST,"잘못된 사용자");
+				res = new CommentWriteResDTO(HttpStatus.BAD_REQUEST,"잘못된 사용자",null);
 			}else {
-				res = new ResDTO(HttpStatus.BAD_REQUEST,"잘못된 계시글 접근");
+				res = new CommentWriteResDTO(HttpStatus.BAD_REQUEST,"잘못된 계시글 접근",null);
 			}
 		}catch(Exception e) {
-			res = new ResDTO(HttpStatus.CONFLICT,e.toString());
+			res = new CommentWriteResDTO(HttpStatus.CONFLICT,e.toString(),null);
 		}finally {
 			return res;
 		}

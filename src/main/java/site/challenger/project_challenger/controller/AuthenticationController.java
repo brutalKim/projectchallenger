@@ -1,5 +1,7 @@
 package site.challenger.project_challenger.controller;
 
+import java.io.IOException;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -30,6 +32,7 @@ public class AuthenticationController {
 	private final JwtTokenValidatorFilter jwtFilter;
 	@PostMapping("/signup")
 	public SignupResDTO signup(Authentication authentication, @RequestBody SignupReqDTO req,HttpServletRequest request,HttpServletResponse response) {
+		
 		String authHeader = request.getHeader("Authorization");
 		String token = null;
 		String cookieToken = jwtFilter.resolveTokenFromCookies(request);

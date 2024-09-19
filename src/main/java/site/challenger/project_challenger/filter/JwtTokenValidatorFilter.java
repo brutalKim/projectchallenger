@@ -35,7 +35,6 @@ public class JwtTokenValidatorFilter extends OncePerRequestFilter {
 		// 헤더로 받을 때
 		//String jwtToken = resolveToken(request);
 		String jwtToken = resolveTokenFromCookies(request);
-		System.out.println("@@@@@@@@"+jwtToken);
 		if (null != jwtToken) {
 			// 토큰이 있으면 검증
 			String body = jwtToken.substring(jwtToken.indexOf('.') + 1, jwtToken.lastIndexOf('.'));

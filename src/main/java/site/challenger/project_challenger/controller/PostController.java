@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 import site.challenger.project_challenger.dto.ResDTO;
+import site.challenger.project_challenger.dto.post.CommentWriteResDTO;
 import site.challenger.project_challenger.dto.post.PostCommentReqDTO;
 import site.challenger.project_challenger.dto.post.PostCommentResDTO;
 import site.challenger.project_challenger.dto.post.PostGetResDTO;
@@ -42,7 +43,6 @@ public class PostController {
 	}
 	@GetMapping("")
 	public ResponseEntity<PostGetResDTO> getPost(@RequestParam(required = false) Long writerId ,Authentication authentication) {
-		System.out.println("testing@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
 		Long userId = Long.parseLong(authentication.getName());
 		PostGetResDTO res= null;
 		if(writerId == null) {
@@ -59,10 +59,10 @@ public class PostController {
 		return new ResponseEntity<PostRecommendResDTO>(res,res.getStatus());
 	}
 	@PostMapping("/comment")
-	public ResponseEntity<ResDTO> writeComment(Authentication authentication, @RequestBody PostCommentReqDTO req) {
+	public ResponseEntity<CommentWriteResDTO> writeComment(Authentication authentication, @RequestBody PostCommentReqDTO req) {
 		Long writerNo = Long.parseLong(authentication.getName());
-		ResDTO res = postManagementService.writeComment(writerNo, req.getPostNo(), req.getContent());
-		return new ResponseEntity<ResDTO>(res,res.getStatus());
+		CommentWriteResDTO res = postManagementService.writeComment(writerNo, req.getPostNo(), req.getContent());
+		return new ResponseEntity<CommentWriteResDTO>(res,res.getStatus());
 	}
 	@GetMapping("/comment")
 	public ResponseEntity<PostCommentResDTO> Comment(@RequestParam Long postNo){
