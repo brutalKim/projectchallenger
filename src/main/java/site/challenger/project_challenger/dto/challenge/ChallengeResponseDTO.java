@@ -1,5 +1,7 @@
 package site.challenger.project_challenger.dto.challenge;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,5 +21,10 @@ public class ChallengeResponseDTO {
 	private String content;
 	private LocationRef locationRef;
 	private long recommend;
+	// 추천 했나
+	private boolean recommended;
+	// 구독 했나
+	private boolean subscribed;
+	private LocalDateTime subDateTime;
 
 }
