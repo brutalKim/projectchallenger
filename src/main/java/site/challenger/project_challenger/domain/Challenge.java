@@ -1,12 +1,17 @@
 package site.challenger.project_challenger.domain;
 
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Getter;
@@ -40,20 +45,20 @@ public class Challenge {
 
 	@Column(nullable = false)
 	private Long recommend;
-
+	
 	@Builder
 	public Challenge(Users user, LocationRef locationRef, String title, String content) {
-		this.users = user;
+		this.users = user; 
 		this.locationRef = locationRef;
 		this.title = title;
-		this.content = content;
+		this.content = content;   
 		this.recommend = (long) 0;
 	}
-
+	
 	public void incrementRecommend() {
 		this.recommend++;
 	}
-
+	
 	public void decrementRecommend() {
 		this.recommend--;
 	}

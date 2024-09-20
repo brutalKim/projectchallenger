@@ -1,5 +1,6 @@
 package site.challenger.project_challenger.service;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -12,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 import lombok.RequiredArgsConstructor;
 import site.challenger.project_challenger.domain.Post;
 import site.challenger.project_challenger.domain.PostComment;
+import site.challenger.project_challenger.domain.PostImage;
 import site.challenger.project_challenger.domain.PostRecommend;
 import site.challenger.project_challenger.domain.Users;
 import site.challenger.project_challenger.dto.ResDTO;
@@ -26,15 +28,18 @@ import site.challenger.project_challenger.repository.PostCommentRepository;
 import site.challenger.project_challenger.repository.PostRecommendRepository;
 import site.challenger.project_challenger.repository.PostRepository;
 import site.challenger.project_challenger.repository.UserRepository;
+import site.challenger.project_challenger.util.PostImageManager;
+import site.challenger.project_challenger.util.PostImageManager;
 
 @RequiredArgsConstructor
-
 @Service
 public class PostManagementService {
 	private final PostRepository postRepository;
 	private final UserRepository userRepository;
 	private final PostRecommendRepository postRecommendRepository;
 	private final PostCommentRepository postCommentRepository;
+	//포스트 이미지 관리 컴포넌트
+	private final PostImageManager postImageManager;
 	
 	//Post작성
 	@Transactional
@@ -45,18 +50,26 @@ public class PostManagementService {
 		try {
 			Optional<Users> writer = userRepository.findById(writerId);
 			if(writer.isPresent()) {
-				Post newPost = new Post(writer.get(),content);
-				postRepository.save(newPost);
+				Post post = new Post(writer.get(),content);
+				//포스트 이미지가 존재할경우
+				if(req.getImages() !=null) {
+					//포스트 이미지 관리 컴포넌트 호출
+					List<PostImage> postImages = postImageManager.saveImage(post, req.getImages());
+					post.addImgs(postImages);
+				}
+				Post testPost = postRepository.save(post);
+				postImageManager.getImage(testPost);
 				res = new ResDTO(HttpStatus.CREATED,"성공");
 			}else {
-				res = new ResDTO(HttpStatus.NOT_FOUND,"회원 정보 찾을 수 없음");
+				res = new ResDTO(HttpStatus.NOT_FOUND,"회원 정보 찾을 수 없음"); 
 			}
 		}catch(Exception e) {
 			res = new ResDTO(HttpStatus.CONFLICT,"서버 내부오류");
 			e.printStackTrace();
-		}finally {
+		}finally
+		{
 			return res;
-			}
+		}
 	}
 	//유저아이디로 Post조회
 	@Transactional(readOnly = true)
@@ -75,6 +88,9 @@ public class PostManagementService {
 					postDTO.setCommentCount(commentCount);
 					String writerNickname = userRepository.findById(postDTO.getUsersNo()).get().getNickname();
 					postDTO.setWriterNickname(writerNickname);
+					Post post = postRepository.findById(postDTO.getNo()).get();
+					List<String> imgs = postImageManager.getImage(post);
+					postDTO.setImg(imgs);
 				}
 				if(posts.size() == 0) {
 					res = new PostGetResDTO(HttpStatus.NOT_FOUND,writer.getNickname()+"이 작성한 글을 찾을 수 없습니다.",null);

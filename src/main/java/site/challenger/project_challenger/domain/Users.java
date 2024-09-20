@@ -38,9 +38,6 @@ public class Users {
     @Column(nullable = true, length = 255)
     private String email;
     
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name ="profile_id")
-    private ProfileImage profileImage;
     
 	@ManyToOne
 	@JoinColumn(name = "oauth_ref_no", nullable = false)
