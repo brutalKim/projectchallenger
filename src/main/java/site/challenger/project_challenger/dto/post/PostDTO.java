@@ -1,13 +1,10 @@
 package site.challenger.project_challenger.dto.post;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import site.challenger.project_challenger.repository.UserRepository;
-import site.challenger.project_challenger.service.ChallengeService;
-import site.challenger.project_challenger.util.JwtParser;
 
 @Getter
 @Setter
@@ -20,6 +17,7 @@ public class PostDTO {
 	private boolean isRecommended;
 	private Long commentCount;
 	private String writerNickname;
+	private List<String> images;
 	public PostDTO(Long no, String content, LocalDateTime date,Long recommend,Long usersNo,Long recommendUsersNo) {
 		this.no = no;
 		this.content = content;
@@ -32,6 +30,9 @@ public class PostDTO {
 			isRecommended = false;
 		}
 		commentCount = 0L;
+	}
+	public void setImg(List<String> images) {
+		this.images = images;
 	}
 	public void setWriterNickname(String nickname) {
 		this.writerNickname = nickname;

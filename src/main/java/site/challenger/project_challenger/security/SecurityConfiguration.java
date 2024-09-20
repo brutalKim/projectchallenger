@@ -27,7 +27,7 @@ public class SecurityConfiguration {
 	private final JwtTokenValidatorFilter jwtTokenValidatorFilter;
 
 	private static final String[] SECURED_URL = { "/authentication/signup" };
-	private static final String[] OPEN_URL = { "/1", "/h2-console/**", "/oauth2/**", };
+	private static final String[] OPEN_URL = { "/1", "/h2-console/**", "/oauth2/**", "/postimg/**"};
 
 	@Bean
 	public WebSecurityCustomizer webSecurityCustomizer() { // security를 적용하지 않을 리소스

@@ -30,6 +30,7 @@ public class AuthenticationController {
 	private final JwtDecoder jwtDecoder;
 	private final JwtProvider jwtProovider;
 	private final JwtTokenValidatorFilter jwtFilter;
+	//회원가입
 	@PostMapping("/signup")
 	public SignupResDTO signup(Authentication authentication, @RequestBody SignupReqDTO req,HttpServletRequest request,HttpServletResponse response) {
 		
@@ -71,6 +72,7 @@ public class AuthenticationController {
 		}
 		return resDTO;
 	}
+	//로그인 최초 접속시 회원정보
 	@GetMapping("/login")
 	public String login(Authentication authentication) {
 		Long userId = Long.parseLong(authentication.getName());

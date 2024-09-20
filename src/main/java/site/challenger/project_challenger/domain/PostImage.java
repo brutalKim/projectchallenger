@@ -1,5 +1,8 @@
 package site.challenger.project_challenger.domain;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -14,27 +17,23 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@NoArgsConstructor
 @Entity
-@Table(name = "post_image", uniqueConstraints = @UniqueConstraint(columnNames = "saved_name"))
+@Table(name ="post_image")
+@NoArgsConstructor
 public class PostImage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long no;
-
     @ManyToOne
     @JoinColumn(name = "post_no", nullable = false)
     private Post post;
-
-    @Column(nullable = false, length = 255)
-    private String originalName;
-
-    @Column(nullable = false, length = 255)
-    private String savedName;
-    
-    @Builder
-    public PostImage(Post post, String originalName) {
+    @Column(name = "stored_name", nullable= false)
+    private String storedName;
+    @Column(name = "file_path", nullable = false)
+    private String filePath;
+    public PostImage(Post post, String storedName,String filePath) {
     	this.post = post;
-    	this.originalName = originalName;
-    }
+    	this.storedName = storedName;
+    	this.filePath = filePath;
+    } 
 }

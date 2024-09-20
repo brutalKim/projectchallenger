@@ -32,9 +32,15 @@ public class JwtTokenValidatorFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
-		// 헤더로 받을 때
-		String jwtToken = resolveToken(request);
-//		String jwtToken = resolveTokenFromCookies(request);
+		// 헤더먼저 검사
+		String jwtToken = null;
+		if(resolveToken(request) != null) {
+			jwtToken = resolveToken(request);
+		}
+		//쿠키 토큰 검사
+		if(resolveTokenFromCookies(request) != null) {
+			jwtToken = resolveTokenFromCookies(request);
+		}
 		if (null != jwtToken) {
 			// 토큰이 있으면 검증
 			String body = jwtToken.substring(jwtToken.indexOf('.') + 1, jwtToken.lastIndexOf('.'));

@@ -26,7 +26,6 @@ import lombok.NoArgsConstructor;
 @Table(name = "post")
 @NoArgsConstructor
 public class Post {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long no;
@@ -43,8 +42,10 @@ public class Post {
     
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<PostComment> comments;
-    
-    @Column(nullable = false)
+
+	@OneToMany(mappedBy = "post",cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	private List<PostImage> postImage;
+	
     //insert 시 시간 기록
     @CreationTimestamp
     private LocalDateTime date;
@@ -63,5 +64,8 @@ public class Post {
     }
     public void addComment(PostComment commnt) {
     	this.comments.add(commnt);
+    }
+    public void addImgs(List<PostImage> postImage) {
+    	this.postImage = postImage;
     }
 }
