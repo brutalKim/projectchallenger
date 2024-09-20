@@ -26,10 +26,11 @@ public class ChallengeController {
 	private final JwtParser jwtParser;
 	private final ChallengeService challengeService;
 
+	// 챌린지 추가
 	@PostMapping("/add")
 	public ResponseEntity<CommonResponseDTO<ChallengeResponseDTO>> addNewChallenge(HttpServletRequest request,
 			@RequestBody ChallengeRequestDTO challengeRequestDTO) {
-		JwtModel jwtModel = jwtParser.fromHeader(request);
+		JwtModel jwtModel = jwtParser.fromCookie(request);
 
 		challengeRequestDTO.setJwtModel(jwtModel);
 
@@ -38,6 +39,7 @@ public class ChallengeController {
 		return new ResponseEntity<CommonResponseDTO<ChallengeResponseDTO>>(responseDto, responseDto.getHttpStatus());
 	}
 
+	// 챌린지 가져오기
 	@GetMapping
 	public ResponseEntity<CommonResponseDTO<ChallengeResponseDTO>> viewAllChallengeByLocationRef(
 			HttpServletRequest request, @RequestParam(required = false) long locationRef,
@@ -50,10 +52,11 @@ public class ChallengeController {
 		return new ResponseEntity<CommonResponseDTO<ChallengeResponseDTO>>(reponseDto, reponseDto.getHttpStatus());
 	}
 
+	// 챌린지 좋아요 하기/취소
 	@GetMapping("/recommend/{chNo}")
 	public ResponseEntity<CommonResponseDTO<ChallengeResponseDTO>> recommendChallenge(HttpServletRequest request,
 			@PathVariable long chNo) {
-		JwtModel jwtModel = jwtParser.fromHeader(request);
+		JwtModel jwtModel = jwtParser.fromCookie(request);
 
 		CommonResponseDTO<ChallengeResponseDTO> responseDto = challengeService.recommendChallenge(jwtModel.getNo(),
 				chNo);
@@ -61,22 +64,23 @@ public class ChallengeController {
 		return new ResponseEntity<CommonResponseDTO<ChallengeResponseDTO>>(responseDto, responseDto.getHttpStatus());
 	}
 
-//	 딜리트 기능 보류 
+//	 딜리트 기능 보류 10명이하면 삭제됨 현재
 	@DeleteMapping("/delete/{chNO}")
 	public ResponseEntity<CommonResponseDTO<ChallengeResponseDTO>> deleteChallenge(HttpServletRequest request,
 			@PathVariable long chNo) {
-		JwtModel jwtModel = jwtParser.fromHeader(request);
+		JwtModel jwtModel = jwtParser.fromCookie(request);
 
 		CommonResponseDTO<ChallengeResponseDTO> responseDto = challengeService.deleteChallenge(jwtModel.getNo(), chNo);
 
 		return new ResponseEntity<CommonResponseDTO<ChallengeResponseDTO>>(responseDto, responseDto.getHttpStatus());
 	}
 
+	// 챌린지 구독 하기/취소
 	@GetMapping("/subscribe/{chNo}")
 	public ResponseEntity<CommonResponseDTO<ChallengeResponseDTO>> subscribeChallenge(HttpServletRequest request,
 			@PathVariable long chNo) {
 
-		JwtModel jwtModel = jwtParser.fromHeader(request);
+		JwtModel jwtModel = jwtParser.fromCookie(request);
 
 		CommonResponseDTO<ChallengeResponseDTO> responseDto = challengeService.subscribeChallenge(jwtModel.getNo(),
 				chNo);
