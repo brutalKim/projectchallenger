@@ -15,7 +15,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.Getter;
 // <<<<<<< insu0909-1
 // =======
 // import jakarta.servlet.http.HttpSession;
@@ -23,7 +22,6 @@ import lombok.Getter;
 // import lombok.Getter;
 // >>>>>>> main
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import site.challenger.project_challenger.constants.MyRole;
 import site.challenger.project_challenger.constants.SecurityConstants;
 import site.challenger.project_challenger.repository.UserRepository;
@@ -40,32 +38,6 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 			Authentication authentication) throws IOException, ServletException {
-// <<<<<<< insu0909-1
-// =======
-// 		// 인증 성공 시 실행할 커스텀 로직을 여기에 작성
-// 		logger.info("CustomOAuth2SuccessHandler 호출됨. 인증 성공!");
-// 		Optional<MemberVO> optionalMemberVO = memberManagementService.searchMember(authentication.getName());
-// 		String jwt = jwtAuthenticationResource.authenticate(authentication);
-// 		jwt = jwt.replace("JwtResponse[token=", "");
-// 		jwt = jwt.replace("]", "");
-// 		if(optionalMemberVO.isEmpty()) {
-// 			System.out.println("no member");
-// 			//비회원일시 세션발급
-// 			HttpSession session = request.getSession(true);
-// 			//세션에 response 넣음
-// 			ResponseDTO responseDTO = new ResponseDTO(jwt,false);
-// 			session.setAttribute("token", responseDTO);
-// 			response.sendRedirect("http://localhost:3000/authentication");
-// 		}else {
-// 			System.out.println("is member");
-// 			HttpSession session = request.getSession(true);
-// 			//세션에 response 넣음
-// 			ResponseDTO responseDTO = new ResponseDTO(jwt,true);
-// 			session.setAttribute("token", responseDTO);
-// 			response.sendRedirect("http://localhost:3000/authentication");
-// 		Optional<Member> optionalMemberVO = memberManagementService.searchMember(authentication.getName());
-// 		ResponseDTO responseDTO;
-// >>>>>>> main
 		String uid = authentication.getName();
 		boolean isUser = userRepository.existsByUid(uid);
 		JwtClaimsSet claims;
@@ -85,29 +57,15 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 			claims = jwtProvider.forGuest(uid, oauthRef);
 		}
 
-//		var claims = JwtClaimsSet.builder()
-//				// 발급자
-//				.issuer("project Challenge")
-//				// 발급시간
-//				.issuedAt(Instant.now())
-//				// 만료 시간
-//				.expiresAt(Instant.now().plusSeconds(60 * 15))
-//				// subject - username - getName 한걸로 데이터베이스에서 꺼내야함 primary key를
-//				.subject(authentication.getName())
-//				// 닉넴, 지역번호 등등, 꺼내놓으면 편할 정보 다 꺼내놓는게 좋음
-//				.claim("nick", authentication)
-//				// 이거 데이터 베이스에서 꺼내야함
-//				.claim("authorities", MyRole.ROLE_GUEST).build();
-
 		var jwtToken = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
 		// 헤더에 추가
 		response.addHeader(SecurityConstants.JWT_HEADER, "Bearer " + jwtToken);
 
 		// < 쿠키 테스트
 		Cookie jwtCookie = new Cookie("JWT_TOKEN", jwtToken);
-		jwtCookie.setHttpOnly(true);
-		jwtCookie.setSecure(true);
-		jwtCookie.setPath("/");
+		jwtCookie.setHttpOnly(true);// 클라이언트에서 접근 불가
+		jwtCookie.setSecure(true); // HTTPS에서만 전송
+		jwtCookie.setPath("/"); // 모든 경로에서 쿠키 전송
 //		jwtCookie.setMaxAge(120);// 설정안하면 세션쿠키됨
 		response.addCookie(jwtCookie);
 		// 쿠키 >
@@ -115,9 +73,9 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 		logger.info("\n IP: {}\n Body: {} \n", request.getRemoteAddr(),
 				jwtToken.substring(jwtToken.indexOf('.') + 1, jwtToken.lastIndexOf('.')));
 		System.out.println(jwtToken);
-		if(isUser) {
+		if (isUser) {
 			response.sendRedirect("http://localhost:3000/main");
-		}else {
+		} else {
 			response.sendRedirect("http://localhost:3000/signup");
 		}
 	}
