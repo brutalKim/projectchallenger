@@ -26,6 +26,7 @@ public class PostImage {
     @JoinColumn(name = "post_no", nullable = false)
     private Post post;
 
+    @Column(nullable = false, length = 255)
     private String originalName;
 
     @Column(nullable = false, length = 255)
