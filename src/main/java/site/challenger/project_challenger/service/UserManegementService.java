@@ -13,6 +13,7 @@ import site.challenger.project_challenger.domain.OauthRef;
 import site.challenger.project_challenger.domain.UserRoleRef;
 import site.challenger.project_challenger.domain.Users;
 import site.challenger.project_challenger.domain.UsersRole;
+import site.challenger.project_challenger.dto.CommonResponseDTO;
 import site.challenger.project_challenger.dto.authentication.SignupResDTO;
 import site.challenger.project_challenger.dto.authentication.SignupServiceReqDTO;
 import site.challenger.project_challenger.repository.LocationRefRepository;
@@ -37,11 +38,12 @@ public class UserManegementService {
 	private final UsersAuthorityRefRepository usersAuthorityRefRepository;
 	private final JwtTokenManagement jwtTokenManagement;
 	
-	public SignupResDTO saveUser(SignupServiceReqDTO signupServiceReqDTO) {
-		SignupResDTO signupResDTO = null;
+	public CommonResponseDTO saveUser(SignupServiceReqDTO signupServiceReqDTO) {
+		CommonResponseDTO res = null;
 		try {
 			if(checkUser(signupServiceReqDTO.getId())) {
-				signupResDTO = new SignupResDTO(false,"중복된 아이디");
+				//signupResDTO = new SignupResDTO(false,"중복된 아이디");
+				res = new CommonResponseDTO(HttpStatus.CONFLICT,"중복된 아이디");
 			}else {
 			//locationRef를 참조
 			LocationRef locationRef = locationRefRepository.findByOpt1AndOpt2(signupServiceReqDTO.getLocationOpt1(), signupServiceReqDTO.getLocationOpt2());
@@ -62,18 +64,20 @@ public class UserManegementService {
 				usersRoleRepository.save(new UsersRole(user,userRoleRef));
 				String token = jwtTokenManagement.issueJwtToken(uid);
 				if(token == null) {
-					signupResDTO = new SignupResDTO(false,"비회원");
+					//signupResDTO = new SignupResDTO(false,"비회원");
+					res = new CommonResponseDTO(HttpStatus.BAD_REQUEST,"비회원");
 				}else {
-					signupResDTO = new SignupResDTO(true,token);
+					//signupResDTO = new SignupResDTO(true,token);
+					res = new CommonResponseDTO(HttpStatus.CREATED,token);
 				}
 			}
 			}
 		}catch (Exception e) {
             // 그 외의 모든 예외 처리
             e.printStackTrace();
-            signupResDTO = new SignupResDTO(false,"서버 오류");
+            res = new CommonResponseDTO(HttpStatus.CONFLICT, e.toString());
         }finally {
-        	return signupResDTO;
+        	return res;
         }
 	}
 	private boolean checkUser(String id) {

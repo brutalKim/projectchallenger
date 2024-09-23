@@ -1,8 +1,9 @@
 package site.challenger.project_challenger.service;
 
-import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
@@ -10,12 +11,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import site.challenger.project_challenger.domain.Post;
 import site.challenger.project_challenger.domain.PostComment;
 import site.challenger.project_challenger.domain.PostImage;
 import site.challenger.project_challenger.domain.PostRecommend;
 import site.challenger.project_challenger.domain.Users;
+import site.challenger.project_challenger.dto.CommonResponseDTO;
 import site.challenger.project_challenger.dto.ResDTO;
 import site.challenger.project_challenger.dto.post.CommentWriteResDTO;
 import site.challenger.project_challenger.dto.post.PostCommentResDTO;
@@ -28,7 +33,6 @@ import site.challenger.project_challenger.repository.PostCommentRepository;
 import site.challenger.project_challenger.repository.PostRecommendRepository;
 import site.challenger.project_challenger.repository.PostRepository;
 import site.challenger.project_challenger.repository.UserRepository;
-import site.challenger.project_challenger.util.PostImageManager;
 import site.challenger.project_challenger.util.PostImageManager;
 
 @RequiredArgsConstructor
@@ -43,8 +47,8 @@ public class PostManagementService {
 	
 	//Post작성
 	@Transactional
-	public ResDTO writePost(PostWriteServiceReqDTO req) {
-		ResDTO res = null;
+	public CommonResponseDTO writePost(PostWriteServiceReqDTO req) {
+		CommonResponseDTO res = null;
 		Long writerId = req.getWriterId();
 		String content = req.getContent();
 		try {
@@ -59,12 +63,12 @@ public class PostManagementService {
 				}
 				Post testPost = postRepository.save(post);
 				postImageManager.getImage(testPost);
-				res = new ResDTO(HttpStatus.CREATED,"성공");
+				res = new CommonResponseDTO(HttpStatus.CREATED);
 			}else {
-				res = new ResDTO(HttpStatus.NOT_FOUND,"회원 정보 찾을 수 없음"); 
+				res = new CommonResponseDTO(HttpStatus.NOT_FOUND,"존재하지 않는 작성자");
 			}
 		}catch(Exception e) {
-			res = new ResDTO(HttpStatus.CONFLICT,"서버 내부오류");
+			res = new CommonResponseDTO(HttpStatus.CONFLICT,e.toString());
 			e.printStackTrace();
 		}finally
 		{
@@ -73,16 +77,16 @@ public class PostManagementService {
 	}
 	//유저아이디로 Post조회
 	@Transactional(readOnly = true)
-	public PostGetResDTO getByUserId(Long writerNo ,Long userNo) {
-		PostGetResDTO res = null;
+	public CommonResponseDTO getByUserId(Long writerNo ,Long userNo) {
+		CommonResponseDTO res = null;
 		try {
 			Optional<Users>optionalWriter = userRepository.findById(writerNo);
 			Optional<Users>optionalUser = userRepository.findById(userNo);
 			if(optionalWriter.isPresent() && optionalUser.isPresent()) {
 				Users writer = optionalWriter.get();
 				Users user = optionalUser.get();
-				ArrayList<PostDTO> posts = postRepository.getPostByWriterAndUser(writer.getNo(),user.getNo());
-				for(PostDTO postDTO :posts) {
+				ArrayList<PostDTO> postsArray = postRepository.getPostByWriterAndUser(writer.getNo(),user.getNo());
+				for(PostDTO postDTO :postsArray) {
 					//덧글수
 					Long commentCount = postCommentRepository.countByPostNo(postDTO.getNo());
 					postDTO.setCommentCount(commentCount);
@@ -92,29 +96,32 @@ public class PostManagementService {
 					List<String> imgs = postImageManager.getImage(post);
 					postDTO.setImg(imgs);
 				}
-				if(posts.size() == 0) {
-					res = new PostGetResDTO(HttpStatus.NOT_FOUND,writer.getNickname()+"이 작성한 글을 찾을 수 없습니다.",null);
+				if(postsArray.size() == 0) {
+					res = new CommonResponseDTO(HttpStatus.NOT_FOUND,writer.getNickname()+"이 작성한 글을 찾을 수 없습니다.");
 				}else {
-					res = new PostGetResDTO(HttpStatus.OK,writer.getNickname()+"님이 작성한글",posts);
+					Map<String,Object> map = new HashMap<>();
+					map.put("posts", (Object) postsArray);
+					res = new CommonResponseDTO(map,HttpStatus.OK);
 				}
 			}else {
-				res = new PostGetResDTO(HttpStatus.NOT_FOUND, "유효하지않은 작성자", null);
+				res = new CommonResponseDTO(HttpStatus.UNAUTHORIZED,"유효하지 않은 작성자");
 			}
 		}catch(Exception e) {
-			res = new PostGetResDTO(HttpStatus.CONFLICT,"내부 서버오류",null);
+			res = new CommonResponseDTO(HttpStatus.CONFLICT,e.toString());
 		}finally {
 			return res;
 		}
 	}
 	//Post추천
 	@Transactional
-	public PostRecommendResDTO recommend(PostRecommendServiceReqDTO req) {
-		PostRecommendResDTO res = null;
+	public CommonResponseDTO recommend(PostRecommendServiceReqDTO req) {
+		CommonResponseDTO res = null;
 		Long userId = req.getUserId();
 		Long postNo = req.getPostNo();
 		try {
 			Optional<Users> optionalRecommender = userRepository.findById(userId);
 			Optional<Post> optionalPost = postRepository.findById(postNo);
+			Map<String,Object> map = new HashMap<>();
 			//사용자와 포스트가 존재할때만
 			if(optionalRecommender.isPresent() && optionalPost.isPresent()) {
 				PostRecommend postRecommend = new PostRecommend(optionalRecommender.get(),optionalPost.get());
@@ -125,29 +132,34 @@ public class PostManagementService {
 					Post post = optionalPost.get();
 					post.incrementRecommend();
 					postRepository.save(post);
-					res = new PostRecommendResDTO(HttpStatus.OK,"추천 성공",true,post.getRecommend());
+					map.put("type", "recommend");
+					map.put("recommendCount",post.getRecommend());
+					res = new CommonResponseDTO(map,HttpStatus.OK);
 				}else {
 					//추천한 이력이 있을시 비추
 					PostRecommend existedRecommend = optionalPostRecommend.get();
 					postRecommendRepository.deleteById(existedRecommend.getPK());
 					Post post = optionalPost.get();
 					post.decrementRecommend();
-					postRepository.save(post);
-					res = new PostRecommendResDTO(HttpStatus.OK,"추천 취소 성공",false,post.getRecommend());
+					map.put("type", "unrecommend");
+					map.put("recommendCount",post.getRecommend());
+					res = new CommonResponseDTO(map,HttpStatus.OK);
 				}
+				//추천자 or 추천할 포스트가 없을 경우
 			}else { 
-				res = new PostRecommendResDTO(HttpStatus.BAD_REQUEST,"잘못된 요청",false,0L);
+				res = new CommonResponseDTO(HttpStatus.BAD_REQUEST,"잘못된 요청");
 			}
 		}catch(Exception e) {
-			res = new PostRecommendResDTO(HttpStatus.CONFLICT, e.toString() ,false,0L);
+			res = new CommonResponseDTO(HttpStatus.CONFLICT,e.toString());
 		}finally {
 			return res;
 		}
 	}
 	//comment 작성
 	@Transactional
-	public CommentWriteResDTO writeComment(Long writerNo,Long postNo ,String content) {
-		CommentWriteResDTO res = null;
+	public CommonResponseDTO writeComment(Long writerNo,Long postNo ,String content) {
+		CommonResponseDTO res = null;
+		Map<String,Object> map = new HashMap<>();
 		try {
 			Optional<Users> optionalWriter = userRepository.findById(writerNo);
 			Optional<Post> optionalPost = postRepository.findById(postNo);
@@ -160,37 +172,51 @@ public class PostManagementService {
 				postCommentRepository.save(postComment);
 				postRepository.save(post);
 				Long commentCount = (long)postRepository.findById(postNo).get().getComments().size();
-				res = new CommentWriteResDTO(HttpStatus.CREATED,"작성 성공",commentCount);
+				//commentCount
+				map.put("commentCount", commentCount);
+				res = new CommonResponseDTO(map,HttpStatus.OK);
+				//작성자가 존재하지 않을 경우
 			}else if(optionalWriter.isEmpty()){
-				res = new CommentWriteResDTO(HttpStatus.BAD_REQUEST,"잘못된 사용자",null);
+				res = new CommonResponseDTO(HttpStatus.UNAUTHORIZED,"존재하지 않은 작성자");
+				//포스트가 존재하지 않을 경우
 			}else {
-				res = new CommentWriteResDTO(HttpStatus.BAD_REQUEST,"잘못된 계시글 접근",null);
+				res = new CommonResponseDTO(HttpStatus.NOT_FOUND,"존재하지 않은 계시글");
 			}
 		}catch(Exception e) {
-			res = new CommentWriteResDTO(HttpStatus.CONFLICT,e.toString(),null);
+			res = new CommonResponseDTO(HttpStatus.CONFLICT,e.toString());
 		}finally {
 			return res;
 		}
 	}
 	//PostNo로 작성된 comment 조회
 	@Transactional(readOnly = true)
-	public PostCommentResDTO getComment(Long postNo) {
-		PostCommentResDTO res = null;
+	public CommonResponseDTO getComment(Long postNo) {
+		CommonResponseDTO res = null;
+		Map<String,Object> map = new HashMap<>();
 		try {
 			Optional<Post> optionalPost = postRepository.findById(postNo);
 			if(optionalPost.isPresent()) {
 				Post post = optionalPost.get();
+				List <Comment> commentArrayList = new ArrayList<>();
 				List<PostComment> comments = post.getComments();
-				res = new PostCommentResDTO(HttpStatus.OK, postNo+"번 comment 조회",comments);
+				for(PostComment comment : comments) {
+					commentArrayList.add(new Comment(comment.getNo(),comment.getUsers().getNickname(),comment.getUsers().getNo(),comment.getContent()));
+				}
+				map.put("comments", commentArrayList);
+				//legacy Code
+				//res = new PostCommentResDTO(HttpStatus.OK, postNo+"번 comment 조회",comments);
+				res = new CommonResponseDTO(map,HttpStatus.OK,postNo+"번 comment 조회",null, true);
 			}else {
-				res = new PostCommentResDTO(HttpStatus.NOT_FOUND,"계시글이 존재하지 않습니다.",null);
+				res = new CommonResponseDTO(HttpStatus.NOT_FOUND,"포스트가 존재하지 않습니다.");
 			}
 		}catch(Exception e) {
-			res = (PostCommentResDTO) new ResDTO(HttpStatus.CONFLICT,e.toString());
+			// = (PostCommentResDTO) new ResDTO(HttpStatus.CONFLICT,e.toString());
+			res = new CommonResponseDTO(HttpStatus.CONFLICT,e.toString());
 		}finally {
 			return res;
 		}
 	}
+	//삭제는 아직 테스트 and 구현 안해봤음 테스트 or 구현 이후 CommonResponseDTO로 return value 수정할 예정
 	//Post 삭제
 	@Transactional
 	public HttpStatus deletePost(Long postNo , Long userId) {
@@ -214,5 +240,15 @@ public class PostManagementService {
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Comment를 삭제할 권한이 없습니다.");
 		}
 		return HttpStatus.OK;
+	}
+	//코맨트 inner Class 전체적 코드를 유지하기 위해
+	@Getter
+	@Setter
+	@AllArgsConstructor
+	public class Comment{
+		private Long CommentNo;
+		private String nickname;
+		private Long userId;
+		private String Content;
 	}
 }
