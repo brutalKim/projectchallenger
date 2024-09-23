@@ -2,6 +2,7 @@ package site.challenger.project_challenger.controller;
 
 import java.io.IOException;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -15,6 +16,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import site.challenger.project_challenger.dto.CommonResponseDTO;
 import site.challenger.project_challenger.dto.authentication.SignupReqDTO;
 import site.challenger.project_challenger.dto.authentication.SignupResDTO;
 import site.challenger.project_challenger.dto.authentication.SignupServiceReqDTO;
@@ -32,7 +34,7 @@ public class AuthenticationController {
 	private final JwtTokenValidatorFilter jwtFilter;
 	//회원가입
 	@PostMapping("/signup")
-	public SignupResDTO signup(Authentication authentication, @RequestBody SignupReqDTO req,HttpServletRequest request,HttpServletResponse response) {
+	public CommonResponseDTO signup(Authentication authentication, @RequestBody SignupReqDTO req,HttpServletRequest request,HttpServletResponse response) {
 		
 		String authHeader = request.getHeader("Authorization");
 		String token = null;
@@ -60,17 +62,17 @@ public class AuthenticationController {
 		SignupServiceReqDTO signupServiceReqDTO = new SignupServiceReqDTO(uid,nickname,opt1,opt2,oauthRef);
 		
 
-		SignupResDTO resDTO = userManagementService.saveUser(signupServiceReqDTO);
-		if(resDTO.isStatus()) {
-			Cookie jwtCookie = new Cookie("JWT_TOKEN", resDTO.getMsg());
+		CommonResponseDTO res = userManagementService.saveUser(signupServiceReqDTO);
+		if(res.getStatusCode() == HttpStatus.OK) {
+			Cookie jwtCookie = new Cookie("JWT_TOKEN", res.getMessage());
 			jwtCookie.setHttpOnly(true);
 			jwtCookie.setSecure(true);
 			jwtCookie.setPath("/");
 //			jwtCookie.setMaxAge(120);// 설정안하면 세션쿠키됨 
 			response.addCookie(jwtCookie);
-			return resDTO;
+			return res;
 		}
-		return resDTO;
+		return res;
 	}
 	//로그인 최초 접속시 회원정보
 	@GetMapping("/login")
