@@ -18,8 +18,8 @@ import site.challenger.project_challenger.domain.ChallengeRecommendPrimaryKey;
 import site.challenger.project_challenger.domain.ChallengeSub;
 import site.challenger.project_challenger.domain.LocationRef;
 import site.challenger.project_challenger.domain.Users;
-import site.challenger.project_challenger.dto.Test;
-import site.challenger.project_challenger.dto.challenge.ChallengeRequestDTO2;
+import site.challenger.project_challenger.dto.CommonResponseDTO;
+import site.challenger.project_challenger.dto.challenge.ChallengeRequestDTO;
 import site.challenger.project_challenger.dto.challenge.ChallengeResponseDTO;
 import site.challenger.project_challenger.repository.ChallengeRecommendRepository;
 import site.challenger.project_challenger.repository.ChallengeRepository;
@@ -37,7 +37,7 @@ public class ChallengeService {
 	private final ChallengeSubRepository challengeSubRepository;
 
 	@Transactional
-	public Test addNewChallenge(long requestUserNo, ChallengeRequestDTO2 challengeRequestDTO) {
+	public CommonResponseDTO addNewChallenge(long requestUserNo, ChallengeRequestDTO challengeRequestDTO) {
 		// challenge 저장,
 		LocationRef locationRef = locationRefRepository.findByOpt1AndOpt2(challengeRequestDTO.getLocationOpt1(),
 				challengeRequestDTO.getLocationOpt2());
@@ -53,7 +53,7 @@ public class ChallengeService {
 		ChallengeSub challengeSub = new ChallengeSub(user, challenge);
 		challengeSubRepository.save(challengeSub);
 
-		Test response;
+		CommonResponseDTO response;
 
 		List<ChallengeResponseDTO> responseList = new ArrayList<>();
 		Map<String, Object> body = new HashMap<>();
@@ -69,7 +69,7 @@ public class ChallengeService {
 
 			responseList.add(challengeResponseDTO);
 
-			response = new Test(body, HttpStatus.CREATED, "성공적으로 챌린지를 생성함", "챌린지 보여줄 것", true);
+			response = new CommonResponseDTO(body, HttpStatus.CREATED, "성공적으로 챌린지를 생성함", "챌린지 보여줄 것", true);
 		} else {
 			// 실패
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "챌린지를 생성하지 못함");
@@ -77,7 +77,7 @@ public class ChallengeService {
 		return response;
 	}
 
-	public Test getAllSubcribedChallengeByUserNo(long targetUserNo, long requestUserNo) {
+	public CommonResponseDTO getAllSubcribedChallengeByUserNo(long targetUserNo, long requestUserNo) {
 
 		// 해당 유저가 구독중인!! 모든 챌린지를 가져옴
 
@@ -115,13 +115,13 @@ public class ChallengeService {
 			responseList.add(responseDto);
 		}
 
-		Test response = new Test(body, HttpStatus.OK, "성공적으로 가져옴", "챌린지들 보여줄 것", true);
+		CommonResponseDTO response = new CommonResponseDTO(body, HttpStatus.OK, "성공적으로 가져옴", "챌린지들 보여줄 것", true);
 
 		return response;
 	}
 
 	@Transactional
-	public Test recommendChallenge(long requestUserNo, long chNo) {
+	public CommonResponseDTO recommendChallenge(long requestUserNo, long chNo) {
 
 		Users requestUser = getUserByUserNo(requestUserNo);
 
@@ -165,14 +165,15 @@ public class ChallengeService {
 
 		responseList.add(responseDto);
 
-		Test response = new Test(body, HttpStatus.OK, recommended ? "추천 취소" : "추천 성공", "추천 숫자 변경", true);
+		CommonResponseDTO response = new CommonResponseDTO(body, HttpStatus.OK, recommended ? "추천 취소" : "추천 성공",
+				"추천 숫자 변경", true);
 
 		return response;
 
 	}
 
 	// 빈 응답으로 나중에 수정 요망
-	public Test deleteChallenge(long requestUserNo, long chNo) {
+	public CommonResponseDTO deleteChallenge(long requestUserNo, long chNo) {
 
 		Users requestUser = getUserByUserNo(requestUserNo);
 
@@ -191,12 +192,12 @@ public class ChallengeService {
 			throw throwNewResponseStatusException(HttpStatus.FORBIDDEN, "10명 이상 구독중인 챌린지는 삭제할 수 없습니다.");
 		}
 
-		Test response = new Test(null, HttpStatus.OK, "성공적으로 삭제됨", "챌린지 삭제됨 다른곳으로", true);
+		CommonResponseDTO response = new CommonResponseDTO(null, HttpStatus.OK, "성공적으로 삭제됨", "챌린지 삭제됨 다른곳으로", true);
 
 		return response;
 	}
 
-	public Test subscribeChallenge(long requestUserNo, long chNo) {
+	public CommonResponseDTO subscribeChallenge(long requestUserNo, long chNo) {
 
 		Users requestUser = getUserByUserNo(requestUserNo);
 		Challenge challenge = getChallengeByChNo(chNo);
@@ -229,7 +230,8 @@ public class ChallengeService {
 		}
 		responseList.add(challengeResponseDTO);
 
-		Test response = new Test(body, HttpStatus.OK, subscribed ? "구독 취소" : "구독 성공", "성공 취소 ui업데이트", true);
+		CommonResponseDTO response = new CommonResponseDTO(body, HttpStatus.OK, subscribed ? "구독 취소" : "구독 성공",
+				"성공 취소 ui업데이트", true);
 
 		return response;
 	}

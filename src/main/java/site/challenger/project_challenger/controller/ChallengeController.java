@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import site.challenger.project_challenger.dto.Test;
-import site.challenger.project_challenger.dto.challenge.ChallengeRequestDTO2;
+import site.challenger.project_challenger.dto.CommonResponseDTO;
+import site.challenger.project_challenger.dto.challenge.ChallengeRequestDTO;
 import site.challenger.project_challenger.service.ChallengeService;
 import site.challenger.project_challenger.util.InsuUtils;
 
@@ -25,18 +25,18 @@ public class ChallengeController {
 
 	// 챌린지 추가
 	@PostMapping("/add")
-	public Test addNewChallenge(Authentication authentication, HttpServletRequest request,
-			@RequestBody ChallengeRequestDTO2 challengeRequestDTO) {
+	public CommonResponseDTO addNewChallenge(Authentication authentication, HttpServletRequest request,
+			@RequestBody ChallengeRequestDTO challengeRequestDTO) {
 		long requestUserNo = InsuUtils.getRequestUserNo(authentication);
 
-		Test reponse = challengeService.addNewChallenge(requestUserNo, challengeRequestDTO);
+		CommonResponseDTO reponse = challengeService.addNewChallenge(requestUserNo, challengeRequestDTO);
 
 		return reponse;
 	}
 
 	// 챌린지 가져오기
 	@GetMapping
-	public Test viewAllChallengeByLocationRef(Authentication authentication, HttpServletRequest request,
+	public CommonResponseDTO viewAllChallengeByLocationRef(Authentication authentication, HttpServletRequest request,
 			@RequestParam(required = false) long locationRef, @RequestParam(required = false) long targetUserNo) {
 
 		long requestUserNo = InsuUtils.getRequestUserNo(authentication);
@@ -49,37 +49,40 @@ public class ChallengeController {
 		// 5. 검색어에 따라 챌린지를 가져옴 (인기순)
 
 		// 시나리오 1
-		Test response = challengeService.getAllSubcribedChallengeByUserNo(targetUserNo, requestUserNo);
+		CommonResponseDTO response = challengeService.getAllSubcribedChallengeByUserNo(targetUserNo, requestUserNo);
 
 		return response;
 	}
 
 	// 챌린지 좋아요 하기/취소
 	@GetMapping("/recommend/{chNo}")
-	public Test recommendChallenge(Authentication authentication, HttpServletRequest request, @PathVariable long chNo) {
+	public CommonResponseDTO recommendChallenge(Authentication authentication, HttpServletRequest request,
+			@PathVariable long chNo) {
 		long requestUserNo = InsuUtils.getRequestUserNo(authentication);
 
-		Test response = challengeService.recommendChallenge(requestUserNo, chNo);
+		CommonResponseDTO response = challengeService.recommendChallenge(requestUserNo, chNo);
 
 		return response;
 	}
 
 //	 딜리트 기능 보류 10명이하면 삭제됨 현재
 	@DeleteMapping("/delete/{chNO}")
-	public Test deleteChallenge(Authentication authentication, HttpServletRequest request, @PathVariable long chNo) {
+	public CommonResponseDTO deleteChallenge(Authentication authentication, HttpServletRequest request,
+			@PathVariable long chNo) {
 		long requestUserNo = InsuUtils.getRequestUserNo(authentication);
 
-		Test response = challengeService.deleteChallenge(requestUserNo, chNo);
+		CommonResponseDTO response = challengeService.deleteChallenge(requestUserNo, chNo);
 
 		return response;
 	}
 
 	// 챌린지 구독 하기/취소 보류 (# 자신이 만든 챌린지는 구독 취소가 불가능하게)
 	@GetMapping("/subscribe/{chNo}")
-	public Test subscribeChallenge(Authentication authentication, HttpServletRequest request, @PathVariable long chNo) {
+	public CommonResponseDTO subscribeChallenge(Authentication authentication, HttpServletRequest request,
+			@PathVariable long chNo) {
 		long requestUserNo = InsuUtils.getRequestUserNo(authentication);
 
-		Test response = challengeService.subscribeChallenge(requestUserNo, chNo);
+		CommonResponseDTO response = challengeService.subscribeChallenge(requestUserNo, chNo);
 
 		return response;
 	}

@@ -11,12 +11,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpSession;
-import site.challenger.project_challenger.dto.Test;
+import site.challenger.project_challenger.dto.CommonResponseDTO;
 
 @RestController
 public class LoginController2 {
 	@GetMapping("/1")
-	public Test loginSuccess(HttpSession session, Authentication authentication) {
+	public CommonResponseDTO loginSuccess(HttpSession session, Authentication authentication) {
 		System.out.println(authentication);
 		Map<String, Object> map = new HashMap<>();
 		List<String> list = new ArrayList<>();
@@ -27,7 +27,7 @@ public class LoginController2 {
 		map.put("TESTString3", 1);
 		map.put("TESTString55", true);
 		map.put("TESTString", list);
-		return new Test(map, HttpStatus.OK, "message", "redirectURL", true);
+		return new CommonResponseDTO(map, HttpStatus.OK, "message", "redirectURL", true);
 	}
 
 	@GetMapping("/3")
