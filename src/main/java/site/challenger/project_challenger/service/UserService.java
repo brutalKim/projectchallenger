@@ -12,9 +12,9 @@ import site.challenger.project_challenger.util.FileSaver;
 public class UserService {
 	private final FileSaver fileSaver;
 
-	public String changeProfileImage(HttpServletRequest request, MultipartFile file, long userNo) {
+	public String changeProfileImage(HttpServletRequest request, MultipartFile file, long requestUserNo) {
 
-		return fileSaver.saveFileForProfile(file, request, userNo);
+		return fileSaver.saveFileForProfile(file, request, requestUserNo);
 	}
 
 }
