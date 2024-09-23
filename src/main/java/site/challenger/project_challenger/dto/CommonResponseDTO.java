@@ -1,25 +1,34 @@
 package site.challenger.project_challenger.dto;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@AllArgsConstructor
-@NoArgsConstructor
 @Setter
 @Getter
-@Builder
-public class CommonResponseDTO<T> {
-	private HttpStatus httpStatus;
+public class CommonResponseDTO extends ResponseEntity<Map<String, Object>> {
 	private String message;
 	private String redirectUrl;
 	private boolean isSuccess;
-	private List<T> responseList;
-
+	public CommonResponseDTO(Map<String, Object> body, HttpStatusCode status, String message, String redirectUrl,boolean isSuccess) {
+		super(body, status);
+		body.put("message", message);
+		body.put("redirectUrl", redirectUrl);
+		body.put("isSuccess", isSuccess);
+	}
+	//내가 추가한거
+	public CommonResponseDTO(HttpStatusCode status) { 
+		super(new HashMap<>(),status);
+	}
+	public CommonResponseDTO(HttpStatusCode status,String message) {
+		super((Map<String, Object>) new HashMap<String,Object>().put("message",message),status);
+	}
+	public CommonResponseDTO(Map<String, Object> body, HttpStatusCode status) {
+		super(body, status);
+	}
 }

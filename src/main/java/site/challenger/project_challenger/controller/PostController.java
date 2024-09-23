@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
+import site.challenger.project_challenger.dto.CommonResponseDTO;
 import site.challenger.project_challenger.dto.ResDTO;
 import site.challenger.project_challenger.dto.post.CommentWriteResDTO;
 import site.challenger.project_challenger.dto.post.PostCommentReqDTO;
@@ -33,56 +34,48 @@ public class PostController {
 	private final PostManagementService postManagementService;
 	//포스트 작성
 	@PostMapping("")
-	public ResponseEntity<ResDTO> writePost(
+	public CommonResponseDTO writePost(
 	        Authentication authentication, 
 	        @RequestParam("content") String content, 
 	        @RequestParam(value = "images", required = false) List<MultipartFile> images) {
 	    Long userId = Long.parseLong(authentication.getName());
 	    PostWriteServiceReqDTO req = new PostWriteServiceReqDTO(userId, content, images);
-	    ResDTO res = postManagementService.writePost(req);
-	    
-	    return new ResponseEntity<>(res, res.getStatus());
+	    return postManagementService.writePost(req);
 	}
 
-	//포스트 삭제
-	@DeleteMapping("")
-	public ResponseEntity<String> deletePost(@RequestParam Long PostNo, Authentication authentication) {
-		Long userId = Long.parseLong(authentication.getName());
-		HttpStatus res = postManagementService.deletePost(PostNo, userId);
-		return new ResponseEntity<String>("삭제 완료",res);
-	}
 	//포스트 조회
 	@GetMapping("")
-	public ResponseEntity<PostGetResDTO> getPost(@RequestParam(required = false) Long writerId ,Authentication authentication) {
+	public CommonResponseDTO getPost(@RequestParam(required = false) Long writerId ,Authentication authentication) {
 		Long userId = Long.parseLong(authentication.getName());
-		PostGetResDTO res= null;
+		CommonResponseDTO res= null;
+		//writer Id가 존재하지 않을 경우 사용자의 포스트 접근
 		if(writerId == null) {
 			res = postManagementService.getByUserId(userId,userId);
 		}else {
+			//writer Id가 존재할 경우 writer가 작성한 포스트 접근
 			res = postManagementService.getByUserId(writerId,userId);
 		}
-		return new ResponseEntity<PostGetResDTO>(res,res.getStatus());
+		return res;
 	}
 	//포스트 좋아요
 	@GetMapping("/recommend")
-	public ResponseEntity<PostRecommendResDTO> recommend(Authentication authentication,@RequestParam Long postNo) {
+	public CommonResponseDTO recommend(Authentication authentication,@RequestParam Long postNo) {
 		Long userNo = Long.parseLong(authentication.getName());
-		PostRecommendResDTO res =postManagementService.recommend(new PostRecommendServiceReqDTO(userNo,postNo));
-		return new ResponseEntity<PostRecommendResDTO>(res,res.getStatus());
+		return postManagementService.recommend(new PostRecommendServiceReqDTO(userNo,postNo));
 	}
 	//포스트 코멘트 작성
 	@PostMapping("/comment")
-	public ResponseEntity<CommentWriteResDTO> writeComment(Authentication authentication, @RequestBody PostCommentReqDTO req) {
+	public CommonResponseDTO writeComment(Authentication authentication, @RequestBody PostCommentReqDTO req) {
 		Long writerNo = Long.parseLong(authentication.getName());
-		CommentWriteResDTO res = postManagementService.writeComment(writerNo, req.getPostNo(), req.getContent());
-		return new ResponseEntity<CommentWriteResDTO>(res,res.getStatus());
+		return postManagementService.writeComment(writerNo, req.getPostNo(), req.getContent());
+		
 	}
 	//포스트 코멘트 조회
 	@GetMapping("/comment")
-	public ResponseEntity<PostCommentResDTO> Comment(@RequestParam Long postNo){
-		PostCommentResDTO res = postManagementService.getComment(postNo);
-		return new ResponseEntity<PostCommentResDTO>(res,res.getStatus());
+	public CommonResponseDTO Comment(@RequestParam Long postNo){
+		return postManagementService.getComment(postNo);
 	}
+	//삭제는 추후 수정
 	//포스트 코멘트 삭제
 	@DeleteMapping("/comment")
 	public ResponseEntity<String> deleteComment(@RequestParam Long commentNo, Authentication authentication){
@@ -90,4 +83,13 @@ public class PostController {
 		HttpStatus res = postManagementService.deleteComment(commentNo, writerNo);
 		return new ResponseEntity<String>("Comment삭제 완료",res);
 	}
+	//삭제는 추후 수정
+	//포스트 삭제
+	@DeleteMapping("")
+	public ResponseEntity<String> deletePost(@RequestParam Long PostNo, Authentication authentication) {
+		Long userId = Long.parseLong(authentication.getName());
+		HttpStatus res = postManagementService.deletePost(PostNo, userId);
+		return new ResponseEntity<String>("삭제 완료",res);
+	}
+	
 }
