@@ -18,26 +18,26 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @Entity
-@Table(name = "challenge_sub", uniqueConstraints = @UniqueConstraint(columnNames = {"challenge_no", "Users_no"}))
+@Table(name = "challenge_sub", uniqueConstraints = @UniqueConstraint(columnNames = { "challenge_no", "Users_no" }))
 public class ChallengeSub {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long no;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long no;
 
-    @ManyToOne
-    @JoinColumn(name = "Users_no", nullable = false)
-    private Users users;
+	@ManyToOne
+	@JoinColumn(name = "users_no", nullable = false)
+	private Users users;
 
-    @ManyToOne
-    @JoinColumn(name = "challenge_no", nullable = false)
-    private Challenge challenge;
-    
-    @CreationTimestamp
-    private LocalDateTime date;
+	@ManyToOne
+	@JoinColumn(name = "challenge_no", nullable = false)
+	private Challenge challenge;
 
-    public ChallengeSub(Users user,Challenge challenge) {
-    	this.users = user;
-    	this.challenge = challenge;
-    }
+	@CreationTimestamp
+	private LocalDateTime date;
+
+	public ChallengeSub(Users user, Challenge challenge) {
+		this.users = user;
+		this.challenge = challenge;
+	}
 }
