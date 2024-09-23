@@ -17,6 +17,8 @@ public interface ChallengeSubRepository extends JpaRepository<ChallengeSub, Long
 
 	List<ChallengeSub> findByChallenge(Challenge challenge);
 
+	List<ChallengeSub> findByUser(Users user);
+
 	long countByChallenge(Challenge challenge);
 
 }

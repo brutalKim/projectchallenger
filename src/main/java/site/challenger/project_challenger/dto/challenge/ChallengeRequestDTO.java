@@ -3,14 +3,12 @@ package site.challenger.project_challenger.dto.challenge;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 import site.challenger.project_challenger.domain.JwtModel;
 import site.challenger.project_challenger.dto.CommonRequestDTO;
 
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString
 public class ChallengeRequestDTO extends CommonRequestDTO {
 
 	private String title;
