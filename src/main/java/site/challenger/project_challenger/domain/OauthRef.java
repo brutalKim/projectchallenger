@@ -13,15 +13,14 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-
 @Entity
 @Table(name = "oauth_ref")
 public class OauthRef {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long no;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long no;
 
-    @Column(name ="type",nullable = false, length = 30, unique = true)
-    private String type;
+	@Column(name = "type", nullable = false, length = 30, unique = true)
+	private String type;
 }
