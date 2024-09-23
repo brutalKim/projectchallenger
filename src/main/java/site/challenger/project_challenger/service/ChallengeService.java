@@ -6,10 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import lombok.RequiredArgsConstructor;
 import site.challenger.project_challenger.domain.Challenge;
@@ -26,6 +29,7 @@ import site.challenger.project_challenger.repository.ChallengeRepository;
 import site.challenger.project_challenger.repository.ChallengeSubRepository;
 import site.challenger.project_challenger.repository.LocationRefRepository;
 import site.challenger.project_challenger.repository.UserRepository;
+import site.challenger.project_challenger.util.InsuUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -72,45 +76,42 @@ public class ChallengeService {
 			response = new CommonResponseDTO(body, HttpStatus.CREATED, "성공적으로 챌린지를 생성함", "챌린지 보여줄 것", true);
 		} else {
 			// 실패
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "챌린지를 생성하지 못함");
+			throw InsuUtils.throwNewResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "챌린지를 생성하지 못했음");
 		}
 		return response;
 	}
 
-	public CommonResponseDTO getAllSubcribedChallengeByUserNo(long targetUserNo, long requestUserNo) {
+	// 시나리오 1
+	public CommonResponseDTO getAllSubcribedChallengeByUserNo(long targetUserNo, int page) {
+
+		Pageable pageable = PageRequest.of(page, 10);
 
 		// 해당 유저가 구독중인!! 모든 챌린지를 가져옴
 
 		Users targetUser = getUserByUserNo(targetUserNo);
-		Users requestUser = getUserByUserNo(requestUserNo);
 
-		List<ChallengeSub> challengeSubs = challengeSubRepository.findByUser(targetUser);
+		Page<ChallengeSub> pagedChallengeSubs = challengeSubRepository.findByUsersSortedByRecommend(targetUserNo,
+				pageable);
+		List<ChallengeSub> challengeSubs = pagedChallengeSubs.getContent();
 		List<Challenge> challenges = new ArrayList<>();
 
 		for (ChallengeSub challengeSub : challengeSubs) {
 			challenges.add(challengeRepository.findById(challengeSub.getNo())
-					.orElseThrow(() -> throwNewResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-							"해당 챌린지가 존재하지 않음 불러오는 도중에 삭제됨")));
+					.orElseThrow(() -> InsuUtils.throwNewResponseStatusException("해당 챌린지가 존재하지 않음 불러오는 도중에 삭제됨")));
 		}
 
 		Map<String, Object> body = new HashMap<>();
 		List<ChallengeResponseDTO> responseList = new ArrayList<>();
 		body.put("responseList", responseList);
 
-		for (Challenge challenge : challenges) {
-			boolean recommended = isUserRecommendedChallenge(requestUser, challenge);
+		// 페이지 정보 넣기
+		InsuUtils.insertMapWithPageInfo(body, pagedChallengeSubs);
 
+		for (Challenge challenge : challenges) {
 			ChallengeResponseDTO responseDto = getDtofillWithChallenge(challenge);
 
-			responseDto.setRecommended(recommended);
-
-			boolean subscribed = isUserSubscribedChallenge(requestUser, challenge);
-			ChallengeSub challengeSub;
-			if (subscribed) {
-				challengeSub = challengeSubRepository.findByUsersAndChallenge(requestUser, challenge).get();
-				responseDto.setSubscribed(subscribed);
-				responseDto.setSubDateTime(challengeSub.getDate());
-			}
+			ChallengeSub challengeSub = challengeSubRepository.findByUsersAndChallenge(targetUser, challenge).get();
+			responseDto.setSubDateTime(challengeSub.getDate());
 
 			responseList.add(responseDto);
 		}
@@ -119,6 +120,90 @@ public class ChallengeService {
 
 		return response;
 	}
+
+	// 시나리오 2
+	public CommonResponseDTO getAllChallengeByLocationRefNo(long targetLocationRefNo, int page) {
+
+		Pageable pageable = PageRequest.of(page, 10, Sort.by("recommend").descending());
+
+		LocationRef locationRef = locationRefRepository.findById(targetLocationRefNo)
+				.orElseThrow(() -> InsuUtils.throwNewResponseStatusException(HttpStatus.NOT_FOUND, "해당 로케이션이 존재하지 않음"));
+
+		Page<Challenge> pagedChallenges = challengeRepository.findByLocationRef(locationRef, pageable);
+
+		List<Challenge> challenges = pagedChallenges.getContent();
+
+		Map<String, Object> body = new HashMap<String, Object>();
+		List<ChallengeResponseDTO> responseList = new ArrayList<ChallengeResponseDTO>();
+		body.put("responseList", responseList);
+
+		// 페이지 정보 넣기
+		InsuUtils.insertMapWithPageInfo(body, pagedChallenges);
+
+		for (Challenge challenge : challenges) {
+			responseList.add(getDtofillWithChallenge(challenge));
+		}
+		CommonResponseDTO response = new CommonResponseDTO(body, HttpStatus.OK);
+
+		return response;
+	}
+
+	// 시나리오 3
+	public CommonResponseDTO getAllChallengeByKeyWord(String keyword, int page) {
+
+		Pageable pageable = PageRequest.of(page, 10, Sort.by("recommend").descending());
+
+		Page<Challenge> pagedChallenges = challengeRepository.findByTitleContaining(keyword, pageable);
+		List<Challenge> challenges = pagedChallenges.getContent();
+
+		Map<String, Object> body = new HashMap<String, Object>();
+		List<ChallengeResponseDTO> responseList = new ArrayList<ChallengeResponseDTO>();
+
+		InsuUtils.insertMapWithPageInfo(body, pagedChallenges);
+
+		for (Challenge challenge : challenges) {
+			responseList.add(getDtofillWithChallenge(challenge));
+		}
+		CommonResponseDTO response = new CommonResponseDTO(body, HttpStatus.OK);
+
+		return response;
+	}
+
+	// 시나리오 4
+	public CommonResponseDTO getChallengeByChallengeNumber(long chNo, long requestUserNo) {
+
+		Users requestUser = getUserByUserNo(requestUserNo);
+		Challenge challenge = getChallengeByChNo(chNo);
+
+		boolean recommended = isUserRecommendedChallenge(requestUser, challenge);
+		boolean subscribed = isUserSubscribedChallenge(requestUser, challenge);
+
+		Map<String, Object> body = new HashMap<String, Object>();
+		List<ChallengeResponseDTO> responseList = new ArrayList<ChallengeResponseDTO>();
+
+		ChallengeResponseDTO challengeResponseDTO = getDtofillWithChallenge(challenge);
+		challengeResponseDTO.setSubscribed(subscribed);
+		challengeResponseDTO.setRecommended(recommended);
+
+		if (subscribed) {
+			ChallengeSub challengeSub = challengeSubRepository.findByUsersAndChallenge(requestUser, challenge).get();
+
+			challengeResponseDTO.setSubDateTime(challengeSub.getDate());
+		}
+
+		responseList.add(challengeResponseDTO);
+		body.put("responseList", responseList);
+
+		CommonResponseDTO response = new CommonResponseDTO(body, HttpStatus.OK);
+
+		return response;
+	}
+
+	// 시나리오 5
+	// 지역구 전체, 전국구
+	// 추천순, 포스트순
+	// (하루간 많은, 일주일간 많은)
+	// 하나씩 하면 최대 8 개 -> 중복 없다고 가정했을 때 적당한 수치인듯
 
 	@Transactional
 	public CommonResponseDTO recommendChallenge(long requestUserNo, long chNo) {
@@ -149,7 +234,7 @@ public class ChallengeService {
 			// 추천 이미했음
 			challenge.decrementRecommend();
 			ChallengeRecommend challengeRecommend = challengeRecommendRepository.findById(challengeRecommendPrimaryKey)
-					.orElseThrow(() -> throwNewResponseStatusException("There's no such recommend record"));
+					.orElseThrow(() -> InsuUtils.throwNewResponseStatusException("추천 기록이 없음"));
 			challengeRecommendRepository.delete(challengeRecommend);
 			challenge = challengeRepository.save(challenge);
 
@@ -172,7 +257,6 @@ public class ChallengeService {
 
 	}
 
-	// 빈 응답으로 나중에 수정 요망
 	public CommonResponseDTO deleteChallenge(long requestUserNo, long chNo) {
 
 		Users requestUser = getUserByUserNo(requestUserNo);
@@ -181,7 +265,7 @@ public class ChallengeService {
 
 		if (requestUser.getNo() != targetChallenge.getUsers().getNo()) {
 			// 지우려는 사람이 만든 사람하고 다르면 삭제 불가
-			throw throwNewResponseStatusException(HttpStatus.FORBIDDEN, "다른 사람의 챌린지는 삭제할 수 없습니다.");
+			throw InsuUtils.throwNewResponseStatusException(HttpStatus.FORBIDDEN, "다른 사람의 챌린지는 삭제할 수 없습니다.");
 		}
 
 		long countOfChallengeSub = challengeSubRepository.countByChallenge(targetChallenge);
@@ -189,14 +273,15 @@ public class ChallengeService {
 		if (countOfChallengeSub < 10) {
 			challengeRepository.delete(targetChallenge);
 		} else {
-			throw throwNewResponseStatusException(HttpStatus.FORBIDDEN, "10명 이상 구독중인 챌린지는 삭제할 수 없습니다.");
+			throw InsuUtils.throwNewResponseStatusException(HttpStatus.FORBIDDEN, "10명 이상 구독중인 챌린지는 삭제할 수 없습니다.");
 		}
 
-		CommonResponseDTO response = new CommonResponseDTO(null, HttpStatus.OK, "성공적으로 삭제됨", "챌린지 삭제됨 다른곳으로", true);
+		CommonResponseDTO response = new CommonResponseDTO(HttpStatus.OK, "성공적으로 삭제됨");
 
 		return response;
 	}
 
+	@Transactional
 	public CommonResponseDTO subscribeChallenge(long requestUserNo, long chNo) {
 
 		Users requestUser = getUserByUserNo(requestUserNo);
@@ -213,14 +298,17 @@ public class ChallengeService {
 		challengeResponseDTO.setRecommended(recommended);
 
 		if (subscribed) {
-			// 이미 구독중이면
+			// 이미 구독중이면 취소함
 			ChallengeSub challengeSub = challengeSubRepository.findByUsersAndChallenge(requestUser, challenge).get();
-//			if(challengeSub.getUsers().getNo() == requestUser.getNo() ) {
-//				// 챌린지 생성자와 챌린지 구독 취소자가 같으면 구독취소 안해줌
-//				throw throwNewResponseStatusException(HttpStatus.FORBIDDEN, "자신이 생성한 챌린지는 구독을 취소할 수 없습니다")
-//			}
 			challengeSubRepository.delete(challengeSub);
 			challengeResponseDTO.setSubscribed(!subscribed);
+
+			// 구독 취소한 뒤에 구독자 0명인 챌린지는 지움
+			long numOfChallenge = challengeSubRepository.countByChallenge(challenge);
+			if (numOfChallenge == 0) {
+				challengeRepository.delete(challenge);
+				return new CommonResponseDTO(HttpStatus.OK, "챌린지가 삭제됨");
+			}
 		} else {
 			// 구독중이 아니면
 			ChallengeSub newChallengeSub = new ChallengeSub(requestUser, challenge);
@@ -253,14 +341,14 @@ public class ChallengeService {
 	private Users getUserByUserNo(long userNo) {
 
 		return userRepository.findById(userNo)
-				.orElseThrow(() -> throwNewResponseStatusException("There's no such User"));
+				.orElseThrow(() -> InsuUtils.throwNewResponseStatusException("There's no such User"));
 	}
 
 	// 챌린지 넘버로 챌린지 가져오기
 	private Challenge getChallengeByChNo(long chNo) {
 
 		return challengeRepository.findById(chNo)
-				.orElseThrow(() -> throwNewResponseStatusException("There's no such Ch"));
+				.orElseThrow(() -> InsuUtils.throwNewResponseStatusException("There's no such Ch"));
 	}
 
 	// sub관련 2개 , 추천 관련 1개 수동으로 넣어줘야함
@@ -273,16 +361,6 @@ public class ChallengeService {
 		responseDTO.setRecommend(challenge.getRecommend());
 
 		return responseDTO;
-	}
-
-	private ResponseStatusException throwNewResponseStatusException(HttpStatus httpStatus, String reason) {
-
-		return new ResponseStatusException(httpStatus, reason);
-	}
-
-	private ResponseStatusException throwNewResponseStatusException(String reason) {
-
-		return new ResponseStatusException(HttpStatus.NOT_FOUND, reason);
 	}
 
 }
