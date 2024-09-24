@@ -15,20 +15,19 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import site.challenger.project_challenger.domain.Challenge;
+import site.challenger.project_challenger.domain.ChallengeHasPost;
 import site.challenger.project_challenger.domain.Post;
 import site.challenger.project_challenger.domain.PostComment;
 import site.challenger.project_challenger.domain.PostImage;
 import site.challenger.project_challenger.domain.PostRecommend;
 import site.challenger.project_challenger.domain.Users;
 import site.challenger.project_challenger.dto.CommonResponseDTO;
-import site.challenger.project_challenger.dto.ResDTO;
-import site.challenger.project_challenger.dto.post.CommentWriteResDTO;
-import site.challenger.project_challenger.dto.post.PostCommentResDTO;
 import site.challenger.project_challenger.dto.post.PostDTO;
-import site.challenger.project_challenger.dto.post.PostGetResDTO;
-import site.challenger.project_challenger.dto.post.PostRecommendResDTO;
 import site.challenger.project_challenger.dto.post.PostRecommendServiceReqDTO;
 import site.challenger.project_challenger.dto.post.PostWriteServiceReqDTO;
+import site.challenger.project_challenger.repository.ChallengeHasPostRepository;
+import site.challenger.project_challenger.repository.ChallengeRepository;
 import site.challenger.project_challenger.repository.PostCommentRepository;
 import site.challenger.project_challenger.repository.PostRecommendRepository;
 import site.challenger.project_challenger.repository.PostRepository;
@@ -42,6 +41,8 @@ public class PostManagementService {
 	private final UserRepository userRepository;
 	private final PostRecommendRepository postRecommendRepository;
 	private final PostCommentRepository postCommentRepository;
+	private final ChallengeRepository challengeRepository;
+	private final ChallengeHasPostRepository challengeHasPostRepository;
 	//포스트 이미지 관리 컴포넌트
 	private final PostImageManager postImageManager;
 	
@@ -51,6 +52,7 @@ public class PostManagementService {
 		CommonResponseDTO res = null;
 		Long writerId = req.getWriterId();
 		String content = req.getContent();
+		List<Long> tagChallenges = req.getTagChallenges();
 		try {
 			Optional<Users> writer = userRepository.findById(writerId);
 			if(writer.isPresent()) {
@@ -61,8 +63,23 @@ public class PostManagementService {
 					List<PostImage> postImages = postImageManager.saveImage(post, req.getImages());
 					post.addImgs(postImages);
 				}
-				Post testPost = postRepository.save(post);
-				postImageManager.getImage(testPost);
+				Post savedPost = postRepository.save(post);
+				//챌린지를 태그 할 경우
+				if(tagChallenges != null) {
+					for(Long challengeNo : tagChallenges) {
+						Optional<Challenge> optionalChallenge = challengeRepository.findById(challengeNo);
+						if(optionalChallenge.isPresent()) {
+							Challenge challenge = optionalChallenge.get();
+							ChallengeHasPost CHP = new ChallengeHasPost(challenge,savedPost);
+							challenge.getChallengeHasPost().add(CHP);
+							//저장
+							challengeRepository.save(challenge);
+							challengeHasPostRepository.save(CHP);
+							savedPost.getChallengeHasPost().add(CHP);
+							postRepository.save(savedPost);
+						}
+					}
+				}
 				res = new CommonResponseDTO(HttpStatus.CREATED);
 			}else {
 				res = new CommonResponseDTO(HttpStatus.NOT_FOUND,"존재하지 않는 작성자");

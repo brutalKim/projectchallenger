@@ -46,6 +46,8 @@ public class Post {
 	@OneToMany(mappedBy = "post",cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<PostImage> postImage;
 	
+	@OneToMany(fetch=FetchType.LAZY)
+	private List<ChallengeHasPost> challengeHasPost;
     //insert 시 시간 기록
     @CreationTimestamp
     private LocalDateTime date;
@@ -55,6 +57,7 @@ public class Post {
     	this.content = content;
     	this.recommend = (long) 0;
     	this.comments = new ArrayList<PostComment>();
+    	this.challengeHasPost = new ArrayList<ChallengeHasPost>();
     }
     public void incrementRecommend() {
     	this.recommend++;
@@ -67,5 +70,8 @@ public class Post {
     }
     public void addImgs(List<PostImage> postImage) {
     	this.postImage = postImage;
+    }
+    public void tagChallenge(Challenge challenge) {
+    	this.challengeHasPost.add(new ChallengeHasPost(challenge,this));
     }
 }

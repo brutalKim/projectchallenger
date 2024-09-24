@@ -14,5 +14,10 @@ import lombok.Setter;
 public class PostWriteServiceReqDTO {
 	private Long writerId;
 	private String content;
-	private List<MultipartFile> images;
+    private List<MultipartFile> images;
+    private List<Long> tagChallenges;
+    public PostWriteServiceReqDTO() {
+    	this.images = null;
+    	this.tagChallenges = null;
+    }
 }
