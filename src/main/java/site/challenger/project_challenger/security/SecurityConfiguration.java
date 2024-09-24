@@ -64,7 +64,7 @@ public class SecurityConfiguration {
 				// 폼 로그인 허용 안함
 				.formLogin(fl -> fl.disable())
 				//
-//			3	.oauth2Login(oauth -> oauth.successHandler(customOAuth2SuccessHandler))
+				.oauth2Login(oauth -> oauth.successHandler(customOAuth2SuccessHandler))
 
 				.build();
 

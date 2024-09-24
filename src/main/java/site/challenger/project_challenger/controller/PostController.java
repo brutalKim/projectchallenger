@@ -37,9 +37,10 @@ public class PostController {
 	public CommonResponseDTO writePost(
 	        Authentication authentication, 
 	        @RequestParam("content") String content, 
-	        @RequestParam(value = "images", required = false) List<MultipartFile> images) {
+	        @RequestParam(value = "images", required = false) List<MultipartFile> images,
+	        @RequestParam(value = "images", required = false) List<Long>tagChallenges) {
 	    Long userId = Long.parseLong(authentication.getName());
-	    PostWriteServiceReqDTO req = new PostWriteServiceReqDTO(userId, content, images);
+	    PostWriteServiceReqDTO req = new PostWriteServiceReqDTO(userId, content, images,tagChallenges);
 	    return postManagementService.writePost(req);
 	}
 
