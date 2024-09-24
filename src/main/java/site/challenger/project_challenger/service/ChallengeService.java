@@ -158,6 +158,7 @@ public class ChallengeService {
 
 		Map<String, Object> body = new HashMap<String, Object>();
 		List<ChallengeResponseDTO> responseList = new ArrayList<ChallengeResponseDTO>();
+		body.put("responseList", responseList);
 
 		InsuUtils.insertMapWithPageInfo(body, pagedChallenges);
 
@@ -271,6 +272,7 @@ public class ChallengeService {
 		long countOfChallengeSub = challengeSubRepository.countByChallenge(targetChallenge);
 
 		if (countOfChallengeSub < 10) {
+			// 실제 딜리트가 아닌 -> unabled 로 바꾸기 !
 			challengeRepository.delete(targetChallenge);
 		} else {
 			throw InsuUtils.throwNewResponseStatusException(HttpStatus.FORBIDDEN, "10명 이상 구독중인 챌린지는 삭제할 수 없습니다.");
