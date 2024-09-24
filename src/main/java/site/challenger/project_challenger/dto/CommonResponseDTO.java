@@ -15,19 +15,30 @@ public class CommonResponseDTO extends ResponseEntity<Map<String, Object>> {
 	private String message;
 	private String redirectUrl;
 	private boolean isSuccess;
-	public CommonResponseDTO(Map<String, Object> body, HttpStatusCode status, String message, String redirectUrl,boolean isSuccess) {
+
+	public CommonResponseDTO(Map<String, Object> body, HttpStatusCode status, String message, String redirectUrl,
+			Boolean isSuccess) {
 		super(body, status);
-		body.put("message", message);
-		body.put("redirectUrl", redirectUrl);
-		body.put("isSuccess", isSuccess);
+		if (null != message) {
+			body.put("message", message);
+		}
+		if (null != redirectUrl) {
+			body.put("redirectUrl", redirectUrl);
+		}
+		if (null != isSuccess) {
+			body.put("isSuccess", isSuccess);
+		}
 	}
-	//내가 추가한거
-	public CommonResponseDTO(HttpStatusCode status) { 
-		super(new HashMap<>(),status);
+
+	// 내가 추가한거
+	public CommonResponseDTO(HttpStatusCode status) {
+		super(new HashMap<>(), status);
 	}
-	public CommonResponseDTO(HttpStatusCode status,String message) {
-		super((Map<String, Object>) new HashMap<String,Object>().put("message",message),status);
+
+	public CommonResponseDTO(HttpStatusCode status, String message) {
+		this(new HashMap<>(), status, message, null, null);
 	}
+
 	public CommonResponseDTO(Map<String, Object> body, HttpStatusCode status) {
 		super(body, status);
 	}

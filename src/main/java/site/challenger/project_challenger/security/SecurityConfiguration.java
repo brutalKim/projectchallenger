@@ -48,7 +48,7 @@ public class SecurityConfiguration {
 				//
 				.authorizeHttpRequests(auth -> {
 					// 모든 허용
-					auth.anyRequest().permitAll();
+					auth.anyRequest().permitAll(); // 2
 //			2		auth.requestMatchers(OPEN_URL).permitAll()
 //							//
 //					
@@ -64,7 +64,7 @@ public class SecurityConfiguration {
 				// 폼 로그인 허용 안함
 				.formLogin(fl -> fl.disable())
 				//
-//			3	.oauth2Login(oauth -> oauth.successHandler(customOAuth2SuccessHandler))
+				.oauth2Login(oauth -> oauth.successHandler(customOAuth2SuccessHandler))
 
 				.build();
 

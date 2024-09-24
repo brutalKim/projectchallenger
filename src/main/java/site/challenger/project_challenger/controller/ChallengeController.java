@@ -64,7 +64,7 @@ public class ChallengeController {
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "targetNo을 받지못함");
 			}
 			response = challengeService.getAllSubcribedChallengeByUserNo(targetNo, page);
-
+			return response;
 		}
 		// 시나리오 2
 		else if (target.equals("location")) {
@@ -72,6 +72,7 @@ public class ChallengeController {
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "targetNo을 받지못함");
 			}
 			response = challengeService.getAllChallengeByLocationRefNo(targetNo, page);
+			return response;
 		}
 		// 시나리오 3
 		else if (target.equals("keyword")) {
@@ -79,20 +80,23 @@ public class ChallengeController {
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "키워드를 받지못함");
 			}
 			response = challengeService.getAllChallengeByKeyWord(keyWord, page);
-
+			return response;
 		}
 		// 시나리오 4
 		else if (target.equals("challenge")) {
 			if (targetNo == 0) {
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "targetNo을 받지못함");
 			}
-
+			response = challengeService.getChallengeByChallengeNumber(targetNo,
+					InsuUtils.getRequestUserNo(authentication));
+			return response;
 		}
 		// 시나리오 5
 		else if (target.equals("recommend")) {
-
+			return null;
 		}
 		return null;
+
 	}
 
 	// 챌린지 좋아요 하기/취소
@@ -107,7 +111,7 @@ public class ChallengeController {
 	}
 
 //	 딜리트 기능 보류 10명이하면 삭제됨 현재
-	@DeleteMapping("/delete/{chNO}")
+	@DeleteMapping("/delete/{chNo}")
 	public CommonResponseDTO deleteChallenge(Authentication authentication, HttpServletRequest request,
 			@PathVariable long chNo) {
 		long requestUserNo = InsuUtils.getRequestUserNo(authentication);
@@ -117,7 +121,7 @@ public class ChallengeController {
 		return response;
 	}
 
-	// 챌린지 구독 하기/취소 보류 (# 자신이 만든 챌린지는 구독 취소가 불가능하게)
+	// 챌린지 구독 하기/취소 보류
 	@GetMapping("/subscribe/{chNo}")
 	public CommonResponseDTO subscribeChallenge(Authentication authentication, HttpServletRequest request,
 			@PathVariable long chNo) {
