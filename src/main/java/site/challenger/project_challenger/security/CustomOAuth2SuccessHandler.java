@@ -74,7 +74,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 				jwtToken.substring(jwtToken.indexOf('.') + 1, jwtToken.lastIndexOf('.')));
 		System.out.println(jwtToken);
 		if (isUser) {
-			response.sendRedirect("http://localhost:3000/main");
+			response.sendRedirect("http://localhost:3000/success");
 		} else {
 			response.sendRedirect("http://localhost:3000/signup");
 		}
