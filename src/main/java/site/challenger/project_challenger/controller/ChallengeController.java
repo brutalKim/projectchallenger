@@ -50,7 +50,7 @@ public class ChallengeController {
 			//
 			@RequestParam(required = false, defaultValue = "0") long targetNo,
 			//
-			@RequestParam(required = false) String keyWord,
+			@RequestParam(required = false) String keyword,
 			//
 			@RequestParam(required = false, defaultValue = "0") int page) {
 
@@ -76,10 +76,10 @@ public class ChallengeController {
 		}
 		// 시나리오 3
 		else if (target.equals("keyword")) {
-			if (keyWord == null) {
+			if (keyword == null) {
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "키워드를 받지못함");
 			}
-			response = challengeService.getAllChallengeByKeyWord(keyWord, page);
+			response = challengeService.getAllChallengeByKeyWord(keyword, page);
 			return response;
 		}
 		// 시나리오 4
