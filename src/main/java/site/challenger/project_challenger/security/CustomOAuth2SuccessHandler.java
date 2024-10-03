@@ -56,7 +56,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 			}
 			claims = jwtProvider.forGuest(uid, oauthRef);
 		}
-
+		
 		var jwtToken = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
 		// 헤더에 추가
 		response.addHeader(SecurityConstants.JWT_HEADER, "Bearer " + jwtToken);

@@ -46,17 +46,23 @@ public class PostController {
 
 	//포스트 조회
 	@GetMapping("")
-	public CommonResponseDTO getPost(@RequestParam(required = false) Long writerId ,Authentication authentication) {
+	public CommonResponseDTO getPost(@RequestParam(required = false) Long writerId ,@RequestParam(required = false) String type,@RequestParam(required = true) int page , Authentication authentication) {
 		Long userId = Long.parseLong(authentication.getName());
-		CommonResponseDTO res= null;
 		//writer Id가 존재하지 않을 경우 사용자의 포스트 접근
 		if(writerId == null) {
-			res = postManagementService.getByUserId(userId,userId);
+			return postManagementService.getByUserId(userId,userId,page);
 		}else {
-			//writer Id가 존재할 경우 writer가 작성한 포스트 접근
-			res = postManagementService.getByUserId(writerId,userId);
+			switch(type) {
+			case"region":
+				return null;
+			case"follow:":
+				return null;
+			case "recommend":
+				return postManagementService.getRecommendPost(userId, page);
+			default:
+				return postManagementService.getByUserId(writerId, userId , page);
+			}
 		}
-		return res;
 	}
 	//포스트 좋아요
 	@GetMapping("/recommend")
@@ -89,7 +95,7 @@ public class PostController {
 	@DeleteMapping("")
 	public ResponseEntity<String> deletePost(@RequestParam Long PostNo, Authentication authentication) {
 		Long userId = Long.parseLong(authentication.getName());
-		HttpStatus res = postManagementService.deletePost(PostNo, userId);
+		HttpStatus res = postManagementService.deletePost(PostNo, userId); 
 		return new ResponseEntity<String>("삭제 완료",res);
 	}
 	

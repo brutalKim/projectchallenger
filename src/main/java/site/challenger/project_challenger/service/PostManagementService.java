@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +40,7 @@ import site.challenger.project_challenger.util.PostImageManager;
 @Service
 public class PostManagementService {
 	private final PostRepository postRepository;
-	private final UserRepository userRepository;
+	private final UserRepository userRepository; 
 	private final PostRecommendRepository postRecommendRepository;
 	private final PostCommentRepository postCommentRepository;
 	private final ChallengeRepository challengeRepository;
@@ -92,27 +94,33 @@ public class PostManagementService {
 			return res;
 		}
 	}
+	//추천 포스트 
+	@Transactional (readOnly = true)
+	public CommonResponseDTO getRecommendPost(Long userNo, int page) {
+		Pageable pageable = PageRequest.of(page, 10);
+		ArrayList<PostDTO> postDTOs = (ArrayList<PostDTO>) postRepository.getRecommendPost(userNo, pageable).getContent();
+		Map<String,Object> map = new HashMap<>();
+		map.put("posts",(Object)postDTOs);
+		return new CommonResponseDTO(map,HttpStatus.OK);
+	}
 	//유저아이디로 Post조회
 	@Transactional(readOnly = true)
-	public CommonResponseDTO getByUserId(Long writerNo ,Long userNo) {
+	public CommonResponseDTO getByUserId(Long writerNo ,Long userNo, int page) {
 		CommonResponseDTO res = null;
+		System.out.println(writerNo + " : " + userNo + " : " + page);
 		try {
 			Optional<Users>optionalWriter = userRepository.findById(writerNo);
 			Optional<Users>optionalUser = userRepository.findById(userNo);
 			if(optionalWriter.isPresent() && optionalUser.isPresent()) {
 				Users writer = optionalWriter.get();
 				Users user = optionalUser.get();
-				ArrayList<PostDTO> postsArray = postRepository.getPostByWriterAndUser(writer.getNo(),user.getNo());
-				for(PostDTO postDTO :postsArray) {
-					//덧글수
-					Long commentCount = postCommentRepository.countByPostNo(postDTO.getNo());
-					postDTO.setCommentCount(commentCount);
-					String writerNickname = userRepository.findById(postDTO.getUsersNo()).get().getNickname();
-					postDTO.setWriterNickname(writerNickname);
-					Post post = postRepository.findById(postDTO.getNo()).get();
-					List<String> imgs = postImageManager.getImage(post);
-					postDTO.setImg(imgs);
+				Pageable pageable = PageRequest.of(page, 10);
+				List<PostDTO> postsArray = postRepository.getPostByWriterAndUser(writer.getNo(),user.getNo(),pageable).getContent();
+				//포스트 전처리
+				for(PostDTO post : postsArray) {
+					System.out.println(post.getNo());
 				}
+				postsArray = postPreprocessing(postsArray);
 				if(postsArray.size() == 0) {
 					res = new CommonResponseDTO(HttpStatus.NOT_FOUND,writer.getNickname()+"이 작성한 글을 찾을 수 없습니다.");
 				}else {
@@ -124,6 +132,9 @@ public class PostManagementService {
 				res = new CommonResponseDTO(HttpStatus.UNAUTHORIZED,"유효하지 않은 작성자");
 			}
 		}catch(Exception e) {
+
+			e.printStackTrace();
+			
 			res = new CommonResponseDTO(HttpStatus.CONFLICT,e.toString());
 		}finally {
 			return res;
@@ -163,7 +174,7 @@ public class PostManagementService {
 					res = new CommonResponseDTO(map,HttpStatus.OK);
 				}
 				//추천자 or 추천할 포스트가 없을 경우
-			}else { 
+			}else {
 				res = new CommonResponseDTO(HttpStatus.BAD_REQUEST,"잘못된 요청");
 			}
 		}catch(Exception e) {
@@ -267,5 +278,23 @@ public class PostManagementService {
 		private String nickname;
 		private Long userId;
 		private String Content;
+	}
+	//포스트 DTO 전처리
+	private ArrayList<PostDTO> postPreprocessing(List<PostDTO> prePostData){
+		ArrayList<PostDTO> data = new ArrayList<>();
+		for(PostDTO postDTO : prePostData) {
+			//덧글수
+			Long commentCount = postCommentRepository.countByPostNo(postDTO.getNo());
+			postDTO.setCommentCount(commentCount);
+			//닉네임
+			String writerNickname = userRepository.findById(postDTO.getUsersNo()).get().getNickname();
+			postDTO.setWriterNickname(writerNickname);
+			//이미지
+			Post post = postRepository.findById(postDTO.getNo()).get();
+			List<String> imgs = postImageManager.getImage(post);
+			postDTO.setImg(imgs);
+			data.add(postDTO);
+		}
+		return data;
 	}
 }
