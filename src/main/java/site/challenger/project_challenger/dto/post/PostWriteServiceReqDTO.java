@@ -1,5 +1,6 @@
 package site.challenger.project_challenger.dto.post;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -15,7 +16,7 @@ public class PostWriteServiceReqDTO {
 	private Long writerId;
 	private String content;
     private List<MultipartFile> images;
-    private List<Long> tagChallenges;
+    private ArrayList<Long> tagChallenges;
     public PostWriteServiceReqDTO() {
     	this.images = null;
     	this.tagChallenges = null;

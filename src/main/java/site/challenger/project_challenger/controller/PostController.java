@@ -1,6 +1,7 @@
 package site.challenger.project_challenger.controller;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -17,12 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 import site.challenger.project_challenger.dto.CommonResponseDTO;
-import site.challenger.project_challenger.dto.ResDTO;
-import site.challenger.project_challenger.dto.post.CommentWriteResDTO;
 import site.challenger.project_challenger.dto.post.PostCommentReqDTO;
-import site.challenger.project_challenger.dto.post.PostCommentResDTO;
-import site.challenger.project_challenger.dto.post.PostGetResDTO;
-import site.challenger.project_challenger.dto.post.PostRecommendResDTO;
 import site.challenger.project_challenger.dto.post.PostRecommendServiceReqDTO;
 import site.challenger.project_challenger.dto.post.PostWriteServiceReqDTO;
 import site.challenger.project_challenger.service.PostManagementService;
@@ -37,10 +33,10 @@ public class PostController {
 	public CommonResponseDTO writePost(
 	        Authentication authentication, 
 	        @RequestParam("content") String content, 
-	        @RequestParam(value = "images", required = false) List<MultipartFile> images,
-	        @RequestParam(value = "images", required = false) List<Long>tagChallenges) {
+	        @RequestParam(value = "images", required = false) List<MultipartFile> images
+	        /*,@RequestParam(value = "images", required = false) List<Long>tagChallenges*/) {
 	    Long userId = Long.parseLong(authentication.getName());
-	    PostWriteServiceReqDTO req = new PostWriteServiceReqDTO(userId, content, images,tagChallenges);
+	    PostWriteServiceReqDTO req = new PostWriteServiceReqDTO(userId, content, images,null);
 	    return postManagementService.writePost(req);
 	}
 
