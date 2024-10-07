@@ -26,5 +26,9 @@ public class ChallengeResponseDTO {
 	// 구독 했나
 	private boolean subscribed;
 	private LocalDateTime subDateTime;
+	// 포스트가 몇개인가
+	private long postNum;
+	// 구독자가 몇 명인가
+	private long follower;
 
 }

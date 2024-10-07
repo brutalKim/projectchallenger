@@ -16,20 +16,20 @@ import site.challenger.project_challenger.domain.Users;
 @Repository
 public interface ChallengeSubRepository extends JpaRepository<ChallengeSub, Long> {
 
-	Optional<ChallengeSub> findByUsersAndChallenge(Users user, Challenge challenge);
+	@Query("SELECT cs FROM ChallengeSub cs WHERE cs.users = :user AND cs.challenge = :challenge AND cs.challenge.abled = true")
+	Optional<ChallengeSub> findByUsersAndChallengeAbledTrue(@Param("user") Users user,
+			@Param("challenge") Challenge challenge);
 
-	boolean existsByUsersAndChallenge(Users user, Challenge challenge);
+	@Query("SELECT CASE WHEN COUNT(cs) > 0 THEN true ELSE false END FROM ChallengeSub cs WHERE cs.users = :user AND cs.challenge = :challenge AND cs.challenge.abled = true")
+	boolean existsByUsersAndChallengeAbledTrue(Users user, Challenge challenge);
 
-	// 사용중 인 곳이 없어서 주석해놈
-//	List<ChallengeSub> findByChallenge(Challenge challenge);
-//	List<ChallengeSub> findByUsers(Users user);
-
-	@Query(nativeQuery = true, value = "SELECT cs.* FROM challenge_sub cs JOIN challenge c ON cs.challenge_no = c.no WHERE cs.users_no = :userNo ORDER BY c.recommend DESC ")
+	@Query(nativeQuery = true, value = "SELECT cs.* FROM challenge_sub cs JOIN challenge c ON cs.challenge_no = c.no WHERE cs.users_no = :userNo AND c.abled = true ORDER BY c.recommend DESC")
 	Page<ChallengeSub> findByUsersSortedByRecommend(@Param("userNo") long userNO, Pageable pageable);
 
-	@Query(value = "SELECT COUNT(*) FROM challenge_sub cs WHERE cs.users_no = :userNo", nativeQuery = true)
+	@Query(value = "SELECT COUNT(*) FROM challenge_sub cs JOIN challenge c ON cs.challenge_no = c.no WHERE cs.users_no = :userNo AND c.abled = true", nativeQuery = true)
 	long countByUserNo(@Param("userNo") long userNo);
 
-	long countByChallenge(Challenge challenge);
+	@Query("SELECT COUNT(cs) FROM ChallengeSub cs WHERE cs.challenge = :challenge AND cs.challenge.abled = true")
+	long countByChallenge(@Param("challenge") Challenge challenge);
 
 }
