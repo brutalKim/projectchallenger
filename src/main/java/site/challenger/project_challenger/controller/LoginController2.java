@@ -1,12 +1,9 @@
 package site.challenger.project_challenger.controller;
 
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import site.challenger.project_challenger.dto.CommonResponseDTO;
 import site.challenger.project_challenger.service.ChallengeService;
 
 @RestController
@@ -14,13 +11,13 @@ import site.challenger.project_challenger.service.ChallengeService;
 public class LoginController2 {
 	private final ChallengeService challengeService;
 
-	@GetMapping("/1")
-	public CommonResponseDTO loginSuccess(HttpSession session, Authentication authentication) {
-		System.out.println(authentication);
-
-		return challengeService.getAllChallengeByLocationRefNo(1, 0);
-
-	}
+//	@GetMapping("/1")
+//	public CommonResponseDTO loginSuccess(HttpSession session, Authentication authentication) {
+//		System.out.println(authentication);
+//
+//		return challengeService.getAllChallengeByLocationRefNo(1, 0);
+//
+//	}
 
 	@GetMapping("/3")
 	public String loginFailed2() {

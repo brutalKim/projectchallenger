@@ -44,10 +44,13 @@ public class Challenge {
 
 	@Column(nullable = false)
 	private Long recommend;
-	
-	@OneToMany(fetch=FetchType.LAZY)
+
+	@OneToMany(fetch = FetchType.LAZY)
 	private List<ChallengeHasPost> challengeHasPost;
-	
+
+	@Column(nullable = false)
+	private boolean abled;
+
 	@Builder
 	public Challenge(Users user, LocationRef locationRef, String title, String content) {
 		this.users = user;

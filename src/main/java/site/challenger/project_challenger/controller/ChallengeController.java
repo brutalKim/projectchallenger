@@ -58,12 +58,14 @@ public class ChallengeController {
 
 		CommonResponseDTO response;
 
+		long requestUserNo = InsuUtils.getRequestUserNo(authentication);
+
 		// 시나리오 1
 		if (target.equals("user")) {
 			if (targetNo == 0) {
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "targetNo을 받지못함");
 			}
-			response = challengeService.getAllSubcribedChallengeByUserNo(targetNo, page);
+			response = challengeService.getAllSubcribedChallengeByUserNo(targetNo, requestUserNo, page);
 			return response;
 		}
 		// 시나리오 2
@@ -71,7 +73,7 @@ public class ChallengeController {
 			if (targetNo == 0) {
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "targetNo을 받지못함");
 			}
-			response = challengeService.getAllChallengeByLocationRefNo(targetNo, page);
+			response = challengeService.getAllChallengeByLocationRefNo(targetNo, requestUserNo, page);
 			return response;
 		}
 		// 시나리오 3
@@ -79,7 +81,7 @@ public class ChallengeController {
 			if (keyword == null) {
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "키워드를 받지못함");
 			}
-			response = challengeService.getAllChallengeByKeyWord(keyword, page);
+			response = challengeService.getAllChallengeByKeyWord(keyword, requestUserNo, page);
 			return response;
 		}
 		// 시나리오 4
@@ -87,8 +89,7 @@ public class ChallengeController {
 			if (targetNo == 0) {
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "targetNo을 받지못함");
 			}
-			response = challengeService.getChallengeByChallengeNumber(targetNo,
-					InsuUtils.getRequestUserNo(authentication));
+			response = challengeService.getChallengeByChallengeNumber(targetNo, requestUserNo);
 			return response;
 		}
 		// 시나리오 5
