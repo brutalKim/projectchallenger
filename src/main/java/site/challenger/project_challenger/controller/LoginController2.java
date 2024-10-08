@@ -1,27 +1,26 @@
 package site.challenger.project_challenger.controller;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-import site.challenger.project_challenger.service.ChallengeService;
+import site.challenger.project_challenger.dto.CommonResponseDTO;
+import site.challenger.project_challenger.service.LoginService;
+import site.challenger.project_challenger.util.InsuUtils;
 
 @RestController
 @RequiredArgsConstructor
 public class LoginController2 {
-	private final ChallengeService challengeService;
 
-//	@GetMapping("/1")
-//	public CommonResponseDTO loginSuccess(HttpSession session, Authentication authentication) {
-//		System.out.println(authentication);
-//
-//		return challengeService.getAllChallengeByLocationRefNo(1, 0);
-//
-//	}
+	private final LoginService loginService;
 
-	@GetMapping("/3")
-	public String loginFailed2() {
-		return "로그인 성공ㅇㅇㅇㅇㅇ";
+	@GetMapping("/afterSuccess")
+	public CommonResponseDTO loginFailed2(Authentication authentication) {
+
+		long requestUserNo = InsuUtils.getRequestUserNo(authentication);
+
+		return loginService.afterLogin(requestUserNo);
 	}
 
 }

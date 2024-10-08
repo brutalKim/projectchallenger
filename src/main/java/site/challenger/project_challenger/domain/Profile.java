@@ -30,11 +30,13 @@ public class Profile {
 	private Users user;
 
 	// 자기 설명 등 보충될예정
+	@Column(name = "description", nullable = true)
+	private String description;
 
-	@Column(name = "original_name, nullable =false")
+	@Column(name = "original_name", nullable = false)
 	private String originalName;
 
-	@Column(name = "saved_name, nullable =false")
+	@Column(name = "saved_name", nullable = false)
 	private String savedName;
 
 }
