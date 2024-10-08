@@ -35,7 +35,14 @@ import site.challenger.project_challenger.repository.PostRecommendRepository;
 import site.challenger.project_challenger.repository.PostRepository;
 import site.challenger.project_challenger.repository.UserRepository;
 import site.challenger.project_challenger.util.PostImageManager;
-
+/*
+ * 
+ * 
+ * 포스트리턴시 포스트 전처리 메서드를 꼭 이용할 것
+ * postPreprocessing 는 맨 밑에 존재
+ * 
+ * 
+ * */
 @RequiredArgsConstructor
 @Service
 public class PostManagementService {
@@ -98,7 +105,9 @@ public class PostManagementService {
 	@Transactional (readOnly = true)
 	public CommonResponseDTO getRecommendPost(Long userNo, int page) {
 		Pageable pageable = PageRequest.of(page, 10);
-		ArrayList<PostDTO> postDTOs = (ArrayList<PostDTO>) postRepository.getRecommendPost(userNo, pageable).getContent();
+		List<PostDTO> postDTOs = postRepository.getRecommendPost(userNo, pageable).getContent();
+		//포스트 전처리
+		postDTOs = postPreprocessing(postDTOs);
 		Map<String,Object> map = new HashMap<>();
 		map.put("posts",(Object)postDTOs);
 		return new CommonResponseDTO(map,HttpStatus.OK);
@@ -107,7 +116,6 @@ public class PostManagementService {
 	@Transactional(readOnly = true)
 	public CommonResponseDTO getByUserId(Long writerNo ,Long userNo, int page) {
 		CommonResponseDTO res = null;
-		System.out.println(writerNo + " : " + userNo + " : " + page);
 		try {
 			Optional<Users>optionalWriter = userRepository.findById(writerNo);
 			Optional<Users>optionalUser = userRepository.findById(userNo);
