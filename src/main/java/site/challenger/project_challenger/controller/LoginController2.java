@@ -2,6 +2,7 @@ package site.challenger.project_challenger.controller;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,14 @@ public class LoginController2 {
 		long requestUserNo = InsuUtils.getRequestUserNo(authentication);
 
 		return loginService.afterLogin(requestUserNo);
+	}
+	@GetMapping("/getuser")
+	public CommonResponseDTO getuser(Authentication authentication ,@RequestParam(required = false) Long userNo) {
+		if(userNo == null) {
+			long requestUserNo = InsuUtils.getRequestUserNo(authentication);
+			return loginService.afterLogin(requestUserNo);
+		}
+		return loginService.afterLogin(userNo);
 	}
 
 }

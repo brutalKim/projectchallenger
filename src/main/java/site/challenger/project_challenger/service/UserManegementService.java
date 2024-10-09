@@ -68,7 +68,7 @@ public class UserManegementService {
 					res = new CommonResponseDTO(HttpStatus.BAD_REQUEST,"비회원");
 				}else {
 					//signupResDTO = new SignupResDTO(true,token);
-					res = new CommonResponseDTO(HttpStatus.CREATED,token);
+					res = new CommonResponseDTO(HttpStatus.CREATED,token); 
 				}
 			}
 			}

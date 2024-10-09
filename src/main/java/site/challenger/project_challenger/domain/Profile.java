@@ -33,10 +33,12 @@ public class Profile {
 	@Column(name = "description", nullable = true)
 	private String description;
 
-	@Column(name = "original_name", nullable = false)
+	@Column(name = "original_name", nullable = true)
 	private String originalName;
 
-	@Column(name = "saved_name", nullable = false)
+	@Column(name = "saved_name", nullable = true)
 	private String savedName;
-
+	public void setUser(Users user) {
+		this.user = user;
+	}
 }
