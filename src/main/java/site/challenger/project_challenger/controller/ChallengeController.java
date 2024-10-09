@@ -94,9 +94,10 @@ public class ChallengeController {
 		}
 		// 시나리오 5
 		else if (target.equals("recommend")) {
-			return null;
+			response = challengeService.genarateRecommendedChallenge(requestUserNo, page);
+			return response;
 		}
-		return null;
+		return new CommonResponseDTO(HttpStatus.BAD_REQUEST, "잘못된 요청");
 
 	}
 
