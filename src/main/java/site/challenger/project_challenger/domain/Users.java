@@ -67,5 +67,8 @@ public class Users {
 		this.oauthRef = oauthRef;
 		this.locationRef = locationRef;
 		this.enable = enable;
+		Profile profile = new Profile();
+		profile.setUser(this);
+		this.profile = profile;
 	}
 }
