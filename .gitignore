@@ -36,3 +36,4 @@ build/
 #ignoreStatic
 /static
 /src/main/resources/static/
+.metadata/.mylyn/repositories.xml.zip
