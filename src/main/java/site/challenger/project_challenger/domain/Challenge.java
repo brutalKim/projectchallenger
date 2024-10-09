@@ -1,6 +1,7 @@
 package site.challenger.project_challenger.domain;
 
 import java.util.List;
+import java.util.Objects;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -67,4 +68,25 @@ public class Challenge {
 	public void decrementRecommend() {
 		this.recommend--;
 	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(no);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		Challenge other = (Challenge) obj;
+		return Objects.equals(no, other.no);
+	}
+
 }

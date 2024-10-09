@@ -3,8 +3,10 @@ package site.challenger.project_challenger.service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -202,8 +204,57 @@ public class ChallengeService {
 	// 추천순, 포스트순
 	// (하루간 많은, 일주일간 많은)
 	// 하나씩 하면 최대 8 개 -> 중복 없다고 가정했을 때 적당한 수치인듯
+	// -- 2개씩 16개
 
 	// 만들어야함
+	public CommonResponseDTO genarateRecommendedChallenge(long requestUserNo, int page) {
+		Set<Challenge> feed = new HashSet<>();
+		List<ChallengeResponseDTO> responseList = new ArrayList<ChallengeResponseDTO>();
+		Map<String, Object> body = new HashMap<String, Object>();
+
+		Users requestUser = getUserByUserNo(requestUserNo);
+
+		LocationRef userLocation = requestUser.getLocationRef();
+		String targetLocationOpt1 = userLocation.getOpt1();
+
+		LocalDateTime startDate = LocalDateTime.now().minusDays(1);
+		Pageable pageable = PageRequest.of(page, 2);
+
+		List<Challenge> case1 = challengeRepository.findMostRecommendedChallengesByOpt1FromStartDate(targetLocationOpt1,
+				startDate, pageable);
+		List<Challenge> case2 = challengeRepository.findMostRecommendedChallengesFromStartDate(startDate, pageable);
+		List<Challenge> case3 = challengeRepository
+				.findTopChallengesByPostCountInByOpt1FromStartDate(targetLocationOpt1, startDate, pageable);
+		List<Challenge> case4 = challengeRepository.findTopChallengesByPostCountInFromStartDate(startDate, pageable);
+
+		startDate = LocalDateTime.now().minusWeeks(1);
+
+		List<Challenge> case5 = challengeRepository.findMostRecommendedChallengesByOpt1FromStartDate(targetLocationOpt1,
+				startDate, pageable);
+		List<Challenge> case6 = challengeRepository.findMostRecommendedChallengesFromStartDate(startDate, pageable);
+		List<Challenge> case7 = challengeRepository
+				.findTopChallengesByPostCountInByOpt1FromStartDate(targetLocationOpt1, startDate, pageable);
+		List<Challenge> case8 = challengeRepository.findTopChallengesByPostCountInFromStartDate(startDate, pageable);
+
+		feed.addAll(case1);
+		feed.addAll(case2);
+		feed.addAll(case3);
+		feed.addAll(case4);
+		feed.addAll(case5);
+		feed.addAll(case6);
+		feed.addAll(case7);
+		feed.addAll(case8);
+
+		for (Challenge challenge : feed) {
+			ChallengeResponseDTO challengeResponseDTO = getDtofillWithChallenge(challenge, requestUser);
+			responseList.add(challengeResponseDTO);
+		}
+		body.put("responseList", responseList);
+
+		CommonResponseDTO response = new CommonResponseDTO(body, HttpStatus.OK, null, null, true);
+		return response;
+
+	}
 
 	@Transactional
 	public CommonResponseDTO recommendChallenge(long requestUserNo, long chNo) {
@@ -359,7 +410,7 @@ public class ChallengeService {
 	}
 
 	// 챌린지로 포스트 몇개나 있는지 가져오기
-	private long getPostNumByChNo(Challenge challenge) {
+	private long getPostNumByCh(Challenge challenge) {
 		List<ChallengeHasPost> list = challengeHasPostRepository.findByChallengeNo(challenge.getNo());
 		if (list.isEmpty()) {
 			return 0;
@@ -379,7 +430,7 @@ public class ChallengeService {
 			responseDTO.setSubscribed(true);
 			responseDTO.setSubDateTime(whenUserSubscribedChallenge(user, challenge));
 		}
-		responseDTO.setPostNum(getPostNumByChNo(challenge));
+		responseDTO.setPostNum(getPostNumByCh(challenge));
 		responseDTO.setFollower(getFollwerByCh(challenge));
 
 		return responseDTO;
