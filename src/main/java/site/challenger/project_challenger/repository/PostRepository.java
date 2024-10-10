@@ -24,4 +24,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             + "FROM Post p LEFT OUTER JOIN PostRecommend pr ON p.no = pr.post.no AND pr.user.no = :userNo " //
             + "ORDER BY p.date DESC")
     Page<PostDTO> getRecommendPost(@Param("userNo") Long userNo, Pageable pageable);
+    
+    //작성한 포스트 수
+    @Query("SELECT COUNT(*) FROM Post p WHERE p.users.no = :userNo")
+    Long getPostCount(@Param("userNo") Long userNo);
 }
