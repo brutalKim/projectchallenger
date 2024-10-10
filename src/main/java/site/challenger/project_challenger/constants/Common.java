@@ -2,7 +2,7 @@ package site.challenger.project_challenger.constants;
 
 public class Common {
 
-	public static String UPLOAD_DIR = "C:\\Users\\Public\\savedimage\\";
+	public static String UPLOAD_DIR = System.getProperty("user.dir") + "/src/main/resources/static/userProfileImg/";
 
 	public static String TOTAL_PAGE = "totalPage";
 
