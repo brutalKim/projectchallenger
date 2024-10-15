@@ -17,7 +17,7 @@ import site.challenger.project_challenger.domain.LocationRef;
 @Repository
 public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
 
-	@Query("SELECT c FROM Challenge c WHERE c.id = :id AND c.abled = true")
+	@Query("SELECT c FROM Challenge c WHERE c.no = :id AND c.abled = true")
 	Optional<Challenge> findActiveById(@Param("id") Long id);
 
 	// 검색 시나리오 2

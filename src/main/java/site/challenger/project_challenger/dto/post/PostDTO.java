@@ -1,6 +1,7 @@
 package site.challenger.project_challenger.dto.post;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Getter;
@@ -18,6 +19,7 @@ public class PostDTO {
 	private Long commentCount;
 	private String writerNickname;
 	private List<String> images;
+	private List<TaggedChallenge> taggedChallenges;
 	public PostDTO(Long no, String content, LocalDateTime date,Long recommend,Long usersNo,Long recommendUsersNo) {
 		this.no = no;
 		this.content = content;
@@ -30,11 +32,25 @@ public class PostDTO {
 			isRecommended = false;
 		}
 		commentCount = 0L;
+		taggedChallenges = new ArrayList<>();
 	}
 	public void setImg(List<String> images) {
 		this.images = images;
 	}
 	public void setWriterNickname(String nickname) {
 		this.writerNickname = nickname;
+	}
+	public void addTaggedChallenge(String title,Long challengeNo) {
+		this.taggedChallenges.add(new TaggedChallenge(title,challengeNo));
+	}
+	@Getter
+	@Setter
+	private class TaggedChallenge{
+		private String title;
+		private Long challengeNo;
+		public TaggedChallenge(String title,Long challengeNo) {
+			this.title = title;
+			this.challengeNo = challengeNo;
+		}
 	}
 }

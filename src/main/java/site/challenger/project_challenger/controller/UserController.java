@@ -17,7 +17,11 @@ import org.springframework.web.multipart.MultipartFile;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import site.challenger.project_challenger.dto.CommonResponseDTO;
+
+import site.challenger.project_challenger.service.ChallengeService;
+
 import site.challenger.project_challenger.dto.user.UserRequestDTO;
+
 import site.challenger.project_challenger.service.UserService;
 import site.challenger.project_challenger.util.InsuUtils;
 
@@ -25,7 +29,7 @@ import site.challenger.project_challenger.util.InsuUtils;
 @RequiredArgsConstructor
 @RequestMapping("/user")
 public class UserController {
-
+	private final ChallengeService challengeService;
 	private final UserService userService;
 
 	@DeleteMapping("/profile/image")
@@ -69,6 +73,18 @@ public class UserController {
 		return userService.followUser(userSelfNo, userNo);
 	}
 
+	//유저 구독중 챌린지 조회
+	@GetMapping("/subchallenge")
+	public CommonResponseDTO getSubChallenge(Authentication authentication, @RequestParam(required = false)Long targetUserNo) {
+		//타겟 유저가 null일경우 자기가 구독한 챌린지 조회
+		Long userNo = Long.parseLong(authentication.getName());
+		if(targetUserNo == null) {
+			return challengeService.getAllSubcribedChallengeByUserNo(userNo, userNo, 0);
+		} 
+		//타겟유저가 존재할경우 타겟유저의 구독한 챌린지 조회
+		return challengeService.getAllSubcribedChallengeByUserNo(targetUserNo, userNo, 0);
+	}
+
 	// 유저 닉네임과, 유저 설명 변경
 	@PostMapping("/profile")
 	public CommonResponseDTO changeUserDetail(Authentication authentication, @RequestBody UserRequestDTO userRequestDTO,
@@ -84,5 +100,6 @@ public class UserController {
 	public CommonResponseDTO isExistNickName(@RequestParam(required = true) String nickname) {
 		return userService.existsByNickName(nickname);
 	}
+
 
 }

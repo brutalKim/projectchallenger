@@ -16,7 +16,7 @@ public class PostWriteServiceReqDTO {
 	private Long writerId;
 	private String content;
     private List<MultipartFile> images;
-    private ArrayList<Long> tagChallenges;
+    private List<Long> tagChallenges;
     public PostWriteServiceReqDTO() {
     	this.images = null;
     	this.tagChallenges = null;

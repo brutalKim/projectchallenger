@@ -105,7 +105,7 @@ public class ChallengeService {
 		List<Challenge> challenges = new ArrayList<>();
 
 		for (ChallengeSub challengeSub : challengeSubs) {
-			challenges.add(challengeRepository.findActiveById(challengeSub.getNo())
+			challenges.add(challengeRepository.findActiveById(challengeSub.getChallenge().getNo())
 					.orElseThrow(() -> InsuUtils.throwNewResponseStatusException("해당 챌린지가 존재하지 않음 불러오는 도중에 삭제됨")));
 		}
 

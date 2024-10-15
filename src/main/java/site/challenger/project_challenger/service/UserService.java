@@ -96,18 +96,21 @@ public class UserService {
 			Follow deleteFollow = followRepository.getFollow(userNo, targetUserNo);
 			followRepository.delete(deleteFollow);
 			ArrayList<FollowDTO> follows = preprocessingFollow(followRepository.getFollower(targetUserNo));
-			map.put("Follow", follows);
-			map.put("type", "follow");
-			return new CommonResponseDTO(map, HttpStatus.ACCEPTED);
+
+			map.put("Follower", (Object)follows);
+			map.put("type", (String)"unfollow");
+			return new CommonResponseDTO(map,HttpStatus.ACCEPTED);
 		}
 		Users user = userRepository.getById(userNo);
 		Users targetUser = userRepository.getById(targetUserNo);
 		Follow newFollow = new Follow(user, targetUser);
 		followRepository.save(newFollow);
 		ArrayList<FollowDTO> follows = preprocessingFollow(followRepository.getFollower(targetUserNo));
-		map.put("Follow", follows);
-		map.put("type", "unfollow");
-		return new CommonResponseDTO(map, HttpStatus.ACCEPTED);
+
+		map.put("Follower", (Object)follows); 
+		map.put("type", (String)"follow");
+		return new CommonResponseDTO(map,HttpStatus.ACCEPTED);
+
 	}
 
 	public CommonResponseDTO changeUserDetail(long requestUserNo, UserRequestDTO userRequestDTO) {
