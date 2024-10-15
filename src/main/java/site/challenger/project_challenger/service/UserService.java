@@ -75,8 +75,8 @@ public class UserService {
 			Follow deleteFollow = followRepository.getFollow(userNo, targetUserNo);
 			followRepository.delete(deleteFollow);
 			ArrayList<FollowDTO> follows = preprocessingFollow(followRepository.getFollower(targetUserNo));
-			map.put("Follow", (Object)follows);
-			map.put("type", (String)"follow");
+			map.put("Follower", (Object)follows);
+			map.put("type", (String)"unfollow");
 			return new CommonResponseDTO(map,HttpStatus.ACCEPTED);
 		}
 		Users user = userRepository.getById(userNo);
@@ -84,8 +84,8 @@ public class UserService {
 		Follow newFollow = new Follow(user,targetUser);
 		followRepository.save(newFollow);
 		ArrayList<FollowDTO> follows = preprocessingFollow(followRepository.getFollower(targetUserNo));
-		map.put("Follow", (Object)follows);
-		map.put("type", (String)"unfollow");
+		map.put("Follower", (Object)follows); 
+		map.put("type", (String)"follow");
 		return new CommonResponseDTO(map,HttpStatus.ACCEPTED);
 	}
 	//팔로우 팔로워 전처리

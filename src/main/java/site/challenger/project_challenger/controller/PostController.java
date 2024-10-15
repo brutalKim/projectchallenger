@@ -34,9 +34,9 @@ public class PostController {
 	        Authentication authentication, 
 	        @RequestParam("content") String content, 
 	        @RequestParam(value = "images", required = false) List<MultipartFile> images
-	        /*,@RequestParam(value = "images", required = false) List<Long>tagChallenges*/) {
+	        ,@RequestParam(required = false) List<Long>tagChallenges) {
 	    Long userId = Long.parseLong(authentication.getName());
-	    PostWriteServiceReqDTO req = new PostWriteServiceReqDTO(userId, content, images,null);
+	    PostWriteServiceReqDTO req = new PostWriteServiceReqDTO(userId, content, images,tagChallenges);
 	    return postManagementService.writePost(req);
 	}
 
@@ -52,16 +52,18 @@ public class PostController {
 				return null;
 			case "recommend":
 				return postManagementService.getRecommendPost(userId, page);
-			default:
+			case "user":
 				if(writerId==null) {
 					return postManagementService.getByUserId(userId,userId,page);
 				}
 				return postManagementService.getByUserId(writerId, userId , page);
+			default:
+				return null;
 		}
 		
 	}
 	//포스트 좋아요
-	@GetMapping("/recommend")
+	@GetMapping("/recommend") 
 	public CommonResponseDTO recommend(Authentication authentication,@RequestParam Long postNo) {
 		Long userNo = Long.parseLong(authentication.getName());
 		return postManagementService.recommend(new PostRecommendServiceReqDTO(userNo,postNo));

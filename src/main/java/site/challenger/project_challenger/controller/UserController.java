@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import site.challenger.project_challenger.dto.CommonResponseDTO;
+import site.challenger.project_challenger.service.ChallengeService;
 import site.challenger.project_challenger.service.UserService;
 import site.challenger.project_challenger.util.InsuUtils;
 
@@ -22,7 +23,7 @@ import site.challenger.project_challenger.util.InsuUtils;
 @RequiredArgsConstructor
 @RequestMapping("/user")
 public class UserController {
-
+	private final ChallengeService challengeService;
 	private final UserService userService;
 
 	@PostMapping(value = "/profile/image", headers = "Content-Type=multipart/form-data")
@@ -54,5 +55,16 @@ public class UserController {
 	public CommonResponseDTO followUser(Authentication authentication, @RequestParam(required = true)Long userNo) {
 		Long userSelfNo = Long.parseLong(authentication.getName());
 		return userService.followUser(userSelfNo, userNo);
+	}
+	//유저 구독중 챌린지 조회
+	@GetMapping("/subchallenge")
+	public CommonResponseDTO getSubChallenge(Authentication authentication, @RequestParam(required = false)Long targetUserNo) {
+		//타겟 유저가 null일경우 자기가 구독한 챌린지 조회
+		Long userNo = Long.parseLong(authentication.getName());
+		if(targetUserNo == null) {
+			return challengeService.getAllSubcribedChallengeByUserNo(userNo, userNo, 0);
+		} 
+		//타겟유저가 존재할경우 타겟유저의 구독한 챌린지 조회
+		return challengeService.getAllSubcribedChallengeByUserNo(targetUserNo, userNo, 0);
 	}
 }

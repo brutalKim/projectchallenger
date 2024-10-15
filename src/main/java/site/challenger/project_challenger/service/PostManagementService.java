@@ -80,10 +80,13 @@ public class PostManagementService {
 						if(optionalChallenge.isPresent()) {
 							Challenge challenge = optionalChallenge.get();
 							ChallengeHasPost CHP = new ChallengeHasPost(challenge,savedPost);
+
+							challengeHasPostRepository.save(CHP);
+							System.out.println(CHP.getChallengeHasPostPrimaryKey().getChallengeNo());
+							
 							challenge.getChallengeHasPost().add(CHP);
 							//저장
 							challengeRepository.save(challenge);
-							challengeHasPostRepository.save(CHP);
 							savedPost.getChallengeHasPost().add(CHP);
 							postRepository.save(savedPost);
 						}
@@ -124,16 +127,12 @@ public class PostManagementService {
 				Users user = optionalUser.get();
 				Pageable pageable = PageRequest.of(page, 10);
 				List<PostDTO> postsArray = postRepository.getPostByWriterAndUser(writer.getNo(),user.getNo(),pageable).getContent();
-				//포스트 전처리
-				for(PostDTO post : postsArray) {
-					System.out.println(post.getNo());
-				}
-				postsArray = postPreprocessing(postsArray);
+				ArrayList<PostDTO>postsArrayList = postPreprocessing(postsArray);
 				if(postsArray.size() == 0) {
 					res = new CommonResponseDTO(HttpStatus.NOT_FOUND,writer.getNickname()+"이 작성한 글을 찾을 수 없습니다.");
 				}else {
 					Map<String,Object> map = new HashMap<>();
-					map.put("posts", (Object) postsArray);
+					map.put("posts", (Object) postsArrayList);
 					res = new CommonResponseDTO(map,HttpStatus.OK);
 				}
 			}else {
@@ -301,6 +300,11 @@ public class PostManagementService {
 			Post post = postRepository.findById(postDTO.getNo()).get();
 			List<String> imgs = postImageManager.getImage(post);
 			postDTO.setImg(imgs);
+			ArrayList<ChallengeHasPost> chps = challengeHasPostRepository.findByPostNo(post.getNo()); 
+			for(ChallengeHasPost chp : chps) {
+				String title = challengeRepository.findActiveById(chp.getChallengeHasPostPrimaryKey().getChallengeNo()).get().getTitle();
+				postDTO.addTaggedChallenge(title, chp.getChallengeHasPostPrimaryKey().getChallengeNo());
+			}
 			data.add(postDTO);
 		}
 		return data;

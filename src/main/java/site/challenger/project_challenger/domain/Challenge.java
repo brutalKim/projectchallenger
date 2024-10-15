@@ -1,5 +1,6 @@
 package site.challenger.project_challenger.domain;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -54,6 +55,7 @@ public class Challenge {
 
 	@Builder
 	public Challenge(Users user, LocationRef locationRef, String title, String content) {
+		this.challengeHasPost = new ArrayList<>();
 		this.users = user;
 		this.locationRef = locationRef;
 		this.title = title;
