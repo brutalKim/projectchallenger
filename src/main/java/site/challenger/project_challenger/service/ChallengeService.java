@@ -354,7 +354,7 @@ public class ChallengeService {
 			if (numOfChallenge == 0) {
 				challenge.setAbled(false);
 				challengeRepository.save(challenge);
-				return new CommonResponseDTO(HttpStatus.OK, "챌린지가 삭제됨");
+				return new CommonResponseDTO(HttpStatus.OK, true);
 			}
 		} else {
 			// 구독중이 아니면
