@@ -30,6 +30,10 @@ public class CommonResponseDTO extends ResponseEntity<Map<String, Object>> {
 		}
 	}
 
+	public CommonResponseDTO(HttpStatusCode status, Boolean isSuccess) {
+		this(new HashMap<>(), status, null, null, isSuccess);
+	}
+
 	// 내가 추가한거
 	public CommonResponseDTO(HttpStatusCode status) {
 		super(new HashMap<>(), status);

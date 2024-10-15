@@ -16,8 +16,10 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import site.challenger.project_challenger.domain.Follow;
+import site.challenger.project_challenger.domain.Profile;
 import site.challenger.project_challenger.domain.Users;
 import site.challenger.project_challenger.dto.CommonResponseDTO;
+import site.challenger.project_challenger.dto.user.UserRequestDTO;
 import site.challenger.project_challenger.repository.FollowRepository;
 import site.challenger.project_challenger.repository.PostRepository;
 import site.challenger.project_challenger.repository.UserRepository;
@@ -31,6 +33,23 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final PostRepository postRepository;
 	private final FollowRepository followRepository;
+
+	// 이미지 지우기
+
+	public CommonResponseDTO deleteProfileImage(long requestUserNo) {
+		Users requestUser = userRepository.findById(requestUserNo)
+				.orElseThrow(() -> InsuUtils.throwNewResponseStatusException("존재하지 않는 유저"));
+		Profile requestUserProfile = requestUser.getProfile();
+		requestUserProfile.setOriginalName(null);
+		requestUserProfile.setSavedName(null);
+		userRepository.save(requestUser);
+
+		CommonResponseDTO response = new CommonResponseDTO(HttpStatus.OK, true);
+
+		return response;
+	}
+
+	// 이미지 변경
 	public String changeProfileImage(HttpServletRequest request, MultipartFile file, long requestUserNo) {
 
 		String imageType = file.getContentType();
@@ -53,55 +72,99 @@ public class UserService {
 
 		return fileSaver.saveFileForProfile(file, request, requestUserNo);
 	}
-	//유저 정보조회
-	public CommonResponseDTO getUserDetail(Long userNo,Long targetNo) {
+
+	// 유저 정보조회
+	public CommonResponseDTO getUserDetail(Long userNo, Long targetNo) {
 		Long postCount = postRepository.getPostCount(targetNo);
 		boolean isFollowed = followRepository.existsByUserNoAndTargetUserNo(userNo, targetNo);
-		
+
 		ArrayList<FollowDTO> follows = preprocessingFollow(followRepository.getFollow(targetNo));
 		ArrayList<FollowDTO> followers = preprocessingFollow(followRepository.getFollower(targetNo));
-		Map<String,Object> map = new HashMap<>();
-		map.put("postCount", (Object)postCount);
-		map.put("isFollowed", (Object)isFollowed);
-		map.put("Follow", (Object)follows);
-		map.put("Follower", (Object)followers);
-		return new CommonResponseDTO(map,HttpStatus.OK);
+		Map<String, Object> map = new HashMap<>();
+		map.put("postCount", postCount);
+		map.put("isFollowed", isFollowed);
+		map.put("Follow", follows);
+		map.put("Follower", followers);
+		return new CommonResponseDTO(map, HttpStatus.OK);
 	}
-	//유저 팔로우
-	public CommonResponseDTO followUser(Long userNo,Long targetUserNo) {
+
+	// 유저 팔로우
+	public CommonResponseDTO followUser(Long userNo, Long targetUserNo) {
 		boolean isExistFollow = followRepository.existsByUserNoAndTargetUserNo(userNo, targetUserNo);
 		Map map = new HashMap<>();
-		if(isExistFollow) {
+		if (isExistFollow) {
 			Follow deleteFollow = followRepository.getFollow(userNo, targetUserNo);
 			followRepository.delete(deleteFollow);
 			ArrayList<FollowDTO> follows = preprocessingFollow(followRepository.getFollower(targetUserNo));
-			map.put("Follow", (Object)follows);
-			map.put("type", (String)"follow");
-			return new CommonResponseDTO(map,HttpStatus.ACCEPTED);
+			map.put("Follow", follows);
+			map.put("type", "follow");
+			return new CommonResponseDTO(map, HttpStatus.ACCEPTED);
 		}
 		Users user = userRepository.getById(userNo);
 		Users targetUser = userRepository.getById(targetUserNo);
-		Follow newFollow = new Follow(user,targetUser);
+		Follow newFollow = new Follow(user, targetUser);
 		followRepository.save(newFollow);
 		ArrayList<FollowDTO> follows = preprocessingFollow(followRepository.getFollower(targetUserNo));
-		map.put("Follow", (Object)follows);
-		map.put("type", (String)"unfollow");
-		return new CommonResponseDTO(map,HttpStatus.ACCEPTED);
+		map.put("Follow", follows);
+		map.put("type", "unfollow");
+		return new CommonResponseDTO(map, HttpStatus.ACCEPTED);
 	}
-	//팔로우 팔로워 전처리
-	private ArrayList<FollowDTO> preprocessingFollow(ArrayList<Follow> follows){
+
+	public CommonResponseDTO changeUserDetail(long requestUserNo, UserRequestDTO userRequestDTO) {
+		Users requestUser = userRepository.findById(requestUserNo)
+				.orElseThrow(() -> InsuUtils.throwNewResponseStatusException("존재하지 않는 유저"));
+
+		String userNickName = userRequestDTO.getUserNickName();
+		String userDescription = userRequestDTO.getUserDescription();
+		// 동일한 닉네임이 있는지 확인
+		boolean isExist = userRepository.existsByNickname(userNickName);
+
+		if (isExist) {
+			InsuUtils.throwNewResponseStatusException(HttpStatus.CONFLICT, "이미 존재하는 유저 닉네임");
+		}
+
+		requestUser.setNickname(userNickName);
+		requestUser.getProfile().setDescription(userDescription);
+
+		Users savedUser = userRepository.save(requestUser);
+
+		Map<String, Object> body = new HashMap<String, Object>();
+
+		body.put("userNickName", savedUser.getNickname());
+		body.put("userDescription", savedUser.getProfile().getDescription());
+
+		CommonResponseDTO response = new CommonResponseDTO(body, HttpStatus.OK);
+
+		return response;
+	}
+
+	// 해당 닉네임을 가진 유저가 존재하는지
+	public CommonResponseDTO existsByNickName(String nickName) {
+		boolean isExist = userRepository.existsByNickname(nickName);
+
+		Map<String, Object> body = new HashMap<String, Object>();
+		body.put("isExist", isExist);
+		CommonResponseDTO response = new CommonResponseDTO(body, HttpStatus.OK);
+
+		return response;
+	}
+
+	// 팔로우 팔로워 전처리
+	private ArrayList<FollowDTO> preprocessingFollow(ArrayList<Follow> follows) {
 		ArrayList<FollowDTO> userList = new ArrayList<>();
-		for(Follow f : follows) {
-			userList.add(new FollowDTO(f.getUsers().getNickname(),f.getUsers().getNo()));
+		for (Follow f : follows) {
+			userList.add(new FollowDTO(f.getUsers().getNickname(), f.getUsers().getNo()));
 		}
 		return userList;
 	}
-	//닉네임과 유저정포 페어 DTO 여기서만 사용될거같아서 private innerClass로 생성
+
+	// 닉네임과 유저정포 페어 DTO 여기서만 사용될거같아서 private innerClass로 생성
 	@Getter
 	@Setter
-	private class FollowDTO{
+	private class FollowDTO {
 		private String nickname;
 		private Long userNo;
+
 		public FollowDTO(String nickname, Long userNo) {
 			this.nickname = nickname;
 			this.userNo = userNo;
