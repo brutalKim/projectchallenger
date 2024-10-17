@@ -294,7 +294,15 @@ public class PostManagementService {
 			Long commentCount = postCommentRepository.countByPostNo(postDTO.getNo());
 			postDTO.setCommentCount(commentCount);
 			//닉네임
-			String writerNickname = userRepository.findById(postDTO.getUsersNo()).get().getNickname();
+			Users writer = userRepository.findById(postDTO.getUsersNo()).get();
+			String writerNickname = writer.getNickname();
+			String profileImg = writer.getProfile().getSavedName();
+			if(profileImg == null) {
+				profileImg = "defaultImg";
+			}else {
+				profileImg = "/userProfileImg/"+profileImg;
+			}
+			postDTO.setProfileImg(profileImg);
 			postDTO.setWriterNickname(writerNickname);
 			//이미지
 			Post post = postRepository.findById(postDTO.getNo()).get();
