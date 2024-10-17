@@ -18,6 +18,7 @@ public class PostDTO {
 	private boolean isRecommended;
 	private Long commentCount;
 	private String writerNickname;
+	private String profileImg;
 	private List<String> images;
 	private List<TaggedChallenge> taggedChallenges;
 	public PostDTO(Long no, String content, LocalDateTime date,Long recommend,Long usersNo,Long recommendUsersNo) {
