@@ -12,20 +12,23 @@ import site.challenger.project_challenger.dto.post.PostDTO;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
-	@Query("SELECT new site.challenger.project_challenger.dto.post.PostDTO(p.no, p.content, p.date, p.recommend, p.users.no, pr.user.no) " +
-		       "FROM Post p LEFT OUTER JOIN PostRecommend pr ON p.no = pr.post.no AND pr.user.no = :userNo " +
-		       "WHERE p.users.no = :writerNo " +
-		       "ORDER BY p.date DESC")
-		Page<PostDTO> getPostByWriterAndUser(@Param("writerNo") Long writerNo, @Param("userNo") Long userNo, Pageable pageable);
+	@Query("SELECT new site.challenger.project_challenger.dto.post.PostDTO(p.no, p.content, p.date, p.recommend, p.users.no, pr.user.no) "
+			+ "FROM Post p LEFT OUTER JOIN PostRecommend pr ON p.no = pr.post.no AND pr.user.no = :userNo "
+			+ "WHERE p.users.no = :writerNo " + "ORDER BY p.date DESC")
+	Page<PostDTO> getPostByWriterAndUser(@Param("writerNo") Long writerNo, @Param("userNo") Long userNo,
+			Pageable pageable);
 
+	// 추천 포스트 조회 ~ 일단 전부 가져옴
+	@Query("SELECT new site.challenger.project_challenger.dto.post.PostDTO(p.no, p.content, p.date, p.recommend, p.users.no, pr.user.no) "
+			+ "FROM Post p LEFT OUTER JOIN PostRecommend pr ON p.no = pr.post.no AND pr.user.no = :userNo " //
+			+ "ORDER BY p.date DESC")
+	Page<PostDTO> getRecommendPost(@Param("userNo") Long userNo, Pageable pageable);
 
-    // 추천 포스트 조회 ~ 일단 전부 가져옴 
-    @Query("SELECT new site.challenger.project_challenger.dto.post.PostDTO(p.no, p.content, p.date, p.recommend, p.users.no, pr.user.no) "
-            + "FROM Post p LEFT OUTER JOIN PostRecommend pr ON p.no = pr.post.no AND pr.user.no = :userNo " //
-            + "ORDER BY p.date DESC")
-    Page<PostDTO> getRecommendPost(@Param("userNo") Long userNo, Pageable pageable);
-    
-    //작성한 포스트 수
-    @Query("SELECT COUNT(*) FROM Post p WHERE p.users.no = :userNo")
-    Long getPostCount(@Param("userNo") Long userNo);
+	// 작성한 포스트 수
+	@Query("SELECT COUNT(*) FROM Post p WHERE p.users.no = :userNo")
+	Long getPostCount(@Param("userNo") Long userNo);
+
+	@Query("SELECT p FROM Post p LEFT JOIN ChallengeHasPost chp ON p.no = chp.challengeHasPostPrimaryKey.postNo WHERE chp.challengeHasPostPrimaryKey.challengeNo = :chNo")
+	Page<Post> getPostByChallengeNo(@Param("chNo") long chNo, Pageable pageable);
+
 }

@@ -23,15 +23,21 @@ import site.challenger.project_challenger.domain.ChallengeRecommend;
 import site.challenger.project_challenger.domain.ChallengeRecommendPrimaryKey;
 import site.challenger.project_challenger.domain.ChallengeSub;
 import site.challenger.project_challenger.domain.LocationRef;
+import site.challenger.project_challenger.domain.Post;
+import site.challenger.project_challenger.domain.PostRecommendPrimaryKey;
 import site.challenger.project_challenger.domain.Users;
 import site.challenger.project_challenger.dto.CommonResponseDTO;
 import site.challenger.project_challenger.dto.challenge.ChallengeRequestDTO;
 import site.challenger.project_challenger.dto.challenge.ChallengeResponseDTO;
+import site.challenger.project_challenger.dto.post.PostDTO;
 import site.challenger.project_challenger.repository.ChallengeHasPostRepository;
 import site.challenger.project_challenger.repository.ChallengeRecommendRepository;
 import site.challenger.project_challenger.repository.ChallengeRepository;
 import site.challenger.project_challenger.repository.ChallengeSubRepository;
 import site.challenger.project_challenger.repository.LocationRefRepository;
+import site.challenger.project_challenger.repository.PostCommentRepository;
+import site.challenger.project_challenger.repository.PostRecommendRepository;
+import site.challenger.project_challenger.repository.PostRepository;
 import site.challenger.project_challenger.repository.UserRepository;
 import site.challenger.project_challenger.util.InsuUtils;
 
@@ -44,6 +50,9 @@ public class ChallengeService {
 	private final ChallengeRecommendRepository challengeRecommendRepository;
 	private final ChallengeSubRepository challengeSubRepository;
 	private final ChallengeHasPostRepository challengeHasPostRepository;
+	private final PostRepository postRepository;
+	private final PostCommentRepository postCommentRepository;
+	private final PostRecommendRepository postRecommendRepository;
 
 	@Transactional
 	public CommonResponseDTO addNewChallenge(long requestUserNo, ChallengeRequestDTO challengeRequestDTO) {
@@ -369,6 +378,62 @@ public class ChallengeService {
 				"성공 취소 ui업데이트", true);
 
 		return response;
+	}
+
+	public CommonResponseDTO getPostsByChNo(long requestUserNo, long chNo, int page) {
+		Users requestUser = getUserByUserNo(requestUserNo);
+		// 인기순 있어도 괜찮을듯?
+
+		// 최신순
+
+		Pageable pageable = PageRequest.of(page, 10, Sort.by("date").descending());
+
+		Page<Post> postByChallengeNo = postRepository.getPostByChallengeNo(chNo, pageable);
+
+		Map<String, Object> body = new HashMap<String, Object>();
+		List<PostDTO> responseList = new ArrayList<>();
+		body.put("responseList", responseList);
+		InsuUtils.insertMapWithPageInfo(body, postByChallengeNo);
+
+		for (Post post : postByChallengeNo) {
+			long postNo = post.getNo();
+//			Post post = postRepository.findById(postNo)
+//					.orElseThrow(() -> InsuUtils.throwNewResponseStatusException("해당 포스트가 존재하지 않음"));
+			Users postWriter = post.getUsers();
+
+			PostDTO postDTO = new PostDTO(null, null, null, null, null, null);
+
+			postDTO.setCommentCount(postCommentRepository.countByPostNo(postNo));
+			postDTO.setContent(post.getContent());
+			postDTO.setDate(post.getDate());
+
+			postDTO.setImages(post.getPostImage().stream().map((item) -> item.getStoredName()).toList());
+			postDTO.setNo(post.getNo());
+
+			postDTO.setProfileImg(postWriter.getProfile().getSavedName());
+			postDTO.setRecommend(post.getRecommend());
+
+			boolean isUserRecommendPost = postRecommendRepository
+					.existsById(new PostRecommendPrimaryKey(requestUser, post));
+			postDTO.setRecommended(isUserRecommendPost);
+
+			ArrayList<ChallengeHasPost> byPostNo = challengeHasPostRepository.findByPostNo(postNo);
+
+			for (ChallengeHasPost challengeHasPost2 : byPostNo) {
+				long challengeNo = challengeHasPost2.getChallengeHasPostPrimaryKey().getChallengeNo();
+				Challenge challengeByChNo = getChallengeByChNo(challengeNo);
+				postDTO.addTaggedChallenge(challengeByChNo.getTitle(), challengeNo);
+			}
+
+			postDTO.setUsersNo(postWriter.getNo());
+			postDTO.setWriterNickname(postWriter.getNickname());
+
+			responseList.add(postDTO);
+		}
+		// 최신순 정렬
+		responseList.sort((o1, o2) -> o2.getDate().compareTo(o1.getDate()));
+
+		return new CommonResponseDTO(body, HttpStatus.OK);
 	}
 
 	// 이 유저가 이 챌린지 추천을 했는가
