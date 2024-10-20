@@ -101,5 +101,5 @@ public class UserController {
 		return userService.existsByNickName(nickname);
 	}
 
-
+	
 }

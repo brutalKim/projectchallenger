@@ -82,7 +82,6 @@ public class PostManagementService {
 							ChallengeHasPost CHP = new ChallengeHasPost(challenge,savedPost);
 
 							challengeHasPostRepository.save(CHP);
-							System.out.println(CHP.getChallengeHasPostPrimaryKey().getChallengeNo());
 							
 							challenge.getChallengeHasPost().add(CHP);
 							//저장
@@ -142,6 +141,29 @@ public class PostManagementService {
 
 			e.printStackTrace();
 			
+			res = new CommonResponseDTO(HttpStatus.CONFLICT,e.toString());
+		}finally {
+			return res;
+		}
+	}
+	//키워드로 포스트 검색 
+	@Transactional (readOnly = true)
+	public CommonResponseDTO getByKeyWord(Long userNo, int page, String keyWord) {
+		CommonResponseDTO res = null;
+		try {
+			Pageable pageable = PageRequest.of(page, 10);
+			List<PostDTO> postsArray = postRepository.getPostByKeyword(keyWord, userNo, pageable).getContent();
+			
+			
+			System.out.println(postsArray.size());
+			
+			
+			ArrayList<PostDTO> postDTOs = postPreprocessing(postsArray);
+			Map<String,Object> map = new HashMap<>();
+			map.put("posts", (Object) postDTOs);
+			res = new CommonResponseDTO(map,HttpStatus.OK);
+		}catch(Exception e) {
+			e.printStackTrace();		
 			res = new CommonResponseDTO(HttpStatus.CONFLICT,e.toString());
 		}finally {
 			return res;

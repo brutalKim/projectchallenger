@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import site.challenger.project_challenger.domain.Challenge;
 import site.challenger.project_challenger.domain.Post;
 import site.challenger.project_challenger.dto.post.PostDTO;
 
@@ -30,5 +31,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
 	@Query("SELECT p FROM Post p LEFT JOIN ChallengeHasPost chp ON p.no = chp.challengeHasPostPrimaryKey.postNo WHERE chp.challengeHasPostPrimaryKey.challengeNo = :chNo")
 	Page<Post> getPostByChallengeNo(@Param("chNo") long chNo, Pageable pageable);
-
+  
+   //content포함 검색
+   @Query("SELECT new site.challenger.project_challenger.dto.post.PostDTO(p.no, p.content, p.date, p.recommend, p.users.no, pr.user.no) "
+           + "FROM Post p LEFT OUTER JOIN PostRecommend pr ON p.no = pr.post.no AND pr.user.no = :userNo "+ //
+           "WHERE p.content LIKE concat('%', :keyWord, '%') AND p.users.no <> :userNo")
+   Page<PostDTO> getPostByKeyword(@Param("keyWord")String keyWord,@Param("userNo") Long userNo, Pageable pageable);
 }
