@@ -134,4 +134,14 @@ public class ChallengeController {
 		return response;
 	}
 
+	// 챌린지에 해당하는 포스트들 가져오기
+	@GetMapping("/post/{chNo}")
+	public CommonResponseDTO getPostsByChNo(Authentication authentication, @PathVariable long chNo,
+			@RequestParam(required = false, defaultValue = "0") int page) {
+
+		long requestUserNo = InsuUtils.getRequestUserNo(authentication);
+
+		return challengeService.getPostsByChNo(requestUserNo, chNo, page);
+	}
+
 }

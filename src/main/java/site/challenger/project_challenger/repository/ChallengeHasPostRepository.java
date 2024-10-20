@@ -14,6 +14,7 @@ public interface ChallengeHasPostRepository extends JpaRepository<ChallengeHasPo
 
 	@Query("SELECT chp FROM ChallengeHasPost chp WHERE chp.challengeHasPostPrimaryKey.challengeNo = :challengeNo")
 	List<ChallengeHasPost> findByChallengeNo(@Param("challengeNo") Long challengeNo);
+
 	@Query("SELECT chp FROM ChallengeHasPost chp WHERE chp.challengeHasPostPrimaryKey.postNo = :postNo")
 	ArrayList<ChallengeHasPost> findByPostNo(@Param("postNo") Long postNo);
 }
