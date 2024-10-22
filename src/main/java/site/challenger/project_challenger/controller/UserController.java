@@ -100,6 +100,12 @@ public class UserController {
 	public CommonResponseDTO isExistNickName(@RequestParam(required = true) String nickname) {
 		return userService.existsByNickName(nickname);
 	}
-
+	
+	//키워드 기반 유저 조회
+	@GetMapping("/search")
+	public CommonResponseDTO searchUser(Authentication authentication, @RequestParam(required = true)String keyWord) {
+		Long userNo = Long.parseLong(authentication.getName());
+		return userService.getUserBykeyWord(userNo, keyWord);
+	}
 	
 }

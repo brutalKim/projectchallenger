@@ -406,8 +406,11 @@ public class ChallengeService {
 			postDTO.setCommentCount(postCommentRepository.countByPostNo(postNo));
 			postDTO.setContent(post.getContent());
 			postDTO.setDate(post.getDate());
-
-			postDTO.setImages(post.getPostImage().stream().map((item) -> item.getStoredName()).toList());
+			
+			//postDTO.setImages(post.getPostImage().stream().map((item) -> item.getStoredName).toList());
+			
+			
+			postDTO.setImages(post.getPostImage().stream().map((item) -> item.getFilePath()).toList());
 			postDTO.setNo(post.getNo());
 
 			postDTO.setProfileImg(postWriter.getProfile().getSavedName());
