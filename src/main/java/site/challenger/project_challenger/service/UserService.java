@@ -19,6 +19,7 @@ import site.challenger.project_challenger.domain.Follow;
 import site.challenger.project_challenger.domain.Profile;
 import site.challenger.project_challenger.domain.Users;
 import site.challenger.project_challenger.dto.CommonResponseDTO;
+import site.challenger.project_challenger.dto.user.SearchUsersDTO;
 import site.challenger.project_challenger.dto.user.UserRequestDTO;
 import site.challenger.project_challenger.repository.FollowRepository;
 import site.challenger.project_challenger.repository.PostRepository;
@@ -150,6 +151,14 @@ public class UserService {
 		CommonResponseDTO response = new CommonResponseDTO(body, HttpStatus.OK);
 
 		return response;
+	}
+	//닉네임을 키워드로하는 유저 조회
+	public CommonResponseDTO getUserBykeyWord(Long userNo, String keyWord) {
+		
+		ArrayList<SearchUsersDTO> userDTOs = userRepository.searchUserByKeyWord(userNo, keyWord);
+		Map<String,Object> body = new HashMap<String,Object>();
+		body.put("result",userDTOs);
+		return new CommonResponseDTO(body,HttpStatus.OK);
 	}
 
 	// 팔로우 팔로워 전처리
