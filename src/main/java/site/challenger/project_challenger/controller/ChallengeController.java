@@ -31,6 +31,8 @@ public class ChallengeController {
 			@RequestBody ChallengeRequestDTO challengeRequestDTO) {
 		long requestUserNo = InsuUtils.getRequestUserNo(authentication);
 
+		System.out.println(challengeRequestDTO);
+
 		CommonResponseDTO reponse = challengeService.addNewChallenge(requestUserNo, challengeRequestDTO);
 
 		return reponse;

@@ -431,7 +431,7 @@ public class ChallengeService {
 			responseList.add(postDTO);
 		}
 		// 최신순 정렬
-		responseList.sort((o1, o2) -> o2.getDate().compareTo(o1.getDate()));
+//		responseList.sort((o1, o2) -> o2.getDate().compareTo(o1.getDate()));
 
 		return new CommonResponseDTO(body, HttpStatus.OK);
 	}

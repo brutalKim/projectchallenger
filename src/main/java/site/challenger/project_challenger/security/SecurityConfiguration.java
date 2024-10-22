@@ -8,12 +8,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import lombok.RequiredArgsConstructor;
+import site.challenger.project_challenger.constants.MyRole;
 import site.challenger.project_challenger.constants.SecurityConstants;
 import site.challenger.project_challenger.filter.JwtTokenValidatorFilter;
 
@@ -24,9 +26,10 @@ public class SecurityConfiguration {
 	private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
 	private final JwtTokenValidatorFilter jwtTokenValidatorFilter;
 
-	private static final String[] SECURED_URL = { "/authentication/signup" };
+	private static final String[] SECURED_URL = { "/authentication/signup/**" };
 	private static final String[] OPEN_URL = { "springdoc.api-docs.path=/api-docs", "/swagger-ui.html",
-			"/swagger-ui/**", "/1", "/h2-console/**", "/oauth2/**", "/postimg/**" };
+			"/swagger-ui/**", "/1", "/h2-console/**", "/oauth2/**", "/postimg/**", "/debug", "login/**",
+			"/authentication/signup", "/afterSuccess" };
 
 	@Bean
 	public WebSecurityCustomizer webSecurityCustomizer() { // security를 적용하지 않을 리소스
@@ -43,19 +46,11 @@ public class SecurityConfiguration {
 				.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 				// csrf 설정 사용안함
 				.csrf(csrf -> csrf.disable())
-				// 필터 추가해야함
-//		1		.addFilterBefore(jwtTokenValidatorFilter, OAuth2LoginAuthenticationFilter.class)
-				//
+				.exceptionHandling((e) -> e.authenticationEntryPoint(new JwtAuthenticationEntryPoint()))
+				.addFilterBefore(jwtTokenValidatorFilter, OAuth2LoginAuthenticationFilter.class)
 				.authorizeHttpRequests(auth -> {
 					// 모든 허용
-					auth.anyRequest().permitAll(); // 2
-//			2		auth.requestMatchers(OPEN_URL).permitAll()
-//							//
-//					
-////							.requestMatchers("/authentication/signup/**").hasRole(MyRole.GUEST);
-////						.requestMatchers("/post/**").hasRole(MyRole.USER)
-////							//
-////							.anyRequest().hasAnyRole(MyRole.USER, MyRole.ADMIN);
+					auth.requestMatchers(OPEN_URL).permitAll().anyRequest().hasAnyRole(MyRole.USER, MyRole.ADMIN);
 				})
 				//
 				.headers(headers -> headers.frameOptions(fo -> fo.sameOrigin()))
