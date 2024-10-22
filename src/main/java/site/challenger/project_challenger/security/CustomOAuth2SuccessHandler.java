@@ -56,7 +56,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 			}
 			claims = jwtProvider.forGuest(uid, oauthRef);
 		}
-		
+
 		var jwtToken = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
 		// 헤더에 추가
 		response.addHeader(SecurityConstants.JWT_HEADER, "Bearer " + jwtToken);
@@ -72,7 +72,6 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
 		logger.info("\n IP: {}\n Body: {} \n", request.getRemoteAddr(),
 				jwtToken.substring(jwtToken.indexOf('.') + 1, jwtToken.lastIndexOf('.')));
-		System.out.println(jwtToken);
 		if (isUser) {
 			response.sendRedirect("http://localhost:3000/success");
 		} else {
