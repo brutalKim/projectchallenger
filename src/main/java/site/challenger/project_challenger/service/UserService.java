@@ -154,7 +154,6 @@ public class UserService {
 	}
 	//닉네임을 키워드로하는 유저 조회
 	public CommonResponseDTO getUserBykeyWord(Long userNo, String keyWord) {
-		
 		ArrayList<SearchUsersDTO> userDTOs = userRepository.searchUserByKeyWord(userNo, keyWord);
 		Map<String,Object> body = new HashMap<String,Object>();
 		body.put("result",userDTOs);

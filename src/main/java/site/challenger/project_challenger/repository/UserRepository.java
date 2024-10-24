@@ -21,9 +21,9 @@ public interface UserRepository extends JpaRepository<Users, Long> {
 
 	boolean existsByNickname(String nickName);
 	
-	@Query("SELECT new site.challenger.project_challenger.dto.user.SearchUsersDTO(users.no, users.profile, users.nickname, follow.users.no) " +
+	@Query("SELECT new site.challenger.project_challenger.dto.user.SearchUsersDTO(users.no,users.profile, users.nickname, follow.users.no) " +
 		       "FROM Users users " +
-		       "LEFT JOIN Follow follow ON follow.users.no = :userNo " +
+		       "LEFT OUTER JOIN Follow follow ON follow.users.no = :userNo AND users.no = follow.followUsers.no "+
 		       "WHERE users.nickname LIKE CONCAT('%', :keyWord, '%')")
 		ArrayList<SearchUsersDTO> searchUserByKeyWord(@Param("userNo") Long userNo, @Param("keyWord") String keyWord);
 

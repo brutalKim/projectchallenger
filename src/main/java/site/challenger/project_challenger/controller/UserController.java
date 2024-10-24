@@ -103,9 +103,10 @@ public class UserController {
 	
 	//키워드 기반 유저 조회
 	@GetMapping("/search")
-	public CommonResponseDTO searchUser(Authentication authentication, @RequestParam(required = true)String keyWord) {
+	public CommonResponseDTO searchUser(Authentication authentication, @RequestParam(required = true)String keyword) {
 		Long userNo = Long.parseLong(authentication.getName());
-		return userService.getUserBykeyWord(userNo, keyWord);
+		System.out.println(keyword);
+		return userService.getUserBykeyWord(userNo, keyword);
 	}
 	
 }
