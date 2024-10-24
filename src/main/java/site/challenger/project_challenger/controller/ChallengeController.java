@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import site.challenger.project_challenger.dto.CommonResponseDTO;
 import site.challenger.project_challenger.dto.challenge.ChallengeRequestDTO;
@@ -28,10 +29,8 @@ public class ChallengeController {
 	// 챌린지 추가
 	@PostMapping("/add")
 	public CommonResponseDTO addNewChallenge(Authentication authentication, HttpServletRequest request,
-			@RequestBody ChallengeRequestDTO challengeRequestDTO) {
+			@Valid @RequestBody ChallengeRequestDTO challengeRequestDTO) {
 		long requestUserNo = InsuUtils.getRequestUserNo(authentication);
-
-		System.out.println(challengeRequestDTO);
 
 		CommonResponseDTO reponse = challengeService.addNewChallenge(requestUserNo, challengeRequestDTO);
 
