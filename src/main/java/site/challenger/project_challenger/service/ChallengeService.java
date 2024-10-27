@@ -357,6 +357,7 @@ public class ChallengeService {
 					.get();
 			challengeSubRepository.delete(challengeSub);
 			challengeResponseDTO.setSubscribed(!subscribed);
+			challengeResponseDTO.setFollower(challengeResponseDTO.getFollower() - 1);
 
 			// 구독 취소한 뒤에 구독자 0명인 챌린지는 지움 -> 실제로는 안지움
 			long numOfChallenge = challengeSubRepository.countByChallenge(challenge);
@@ -371,6 +372,7 @@ public class ChallengeService {
 			challengeSubRepository.save(newChallengeSub);
 			challengeResponseDTO.setSubscribed(!subscribed);
 			challengeResponseDTO.setSubDateTime(LocalDateTime.now());
+			challengeResponseDTO.setFollower(challengeResponseDTO.getFollower() + 1);
 		}
 		responseList.add(challengeResponseDTO);
 
@@ -406,10 +408,10 @@ public class ChallengeService {
 			postDTO.setCommentCount(postCommentRepository.countByPostNo(postNo));
 			postDTO.setContent(post.getContent());
 			postDTO.setDate(post.getDate());
-			
-			//postDTO.setImages(post.getPostImage().stream().map((item) -> item.getStoredName).toList());
-			
-			
+
+			// postDTO.setImages(post.getPostImage().stream().map((item) ->
+			// item.getStoredName).toList());
+
 			postDTO.setImages(post.getPostImage().stream().map((item) -> item.getFilePath()).toList());
 			postDTO.setNo(post.getNo());
 

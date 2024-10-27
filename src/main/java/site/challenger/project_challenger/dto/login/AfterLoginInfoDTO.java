@@ -11,6 +11,7 @@ import site.challenger.project_challenger.domain.LocationRef;
 @Getter
 @Setter
 public class AfterLoginInfoDTO {
+	private long userNo;
 	private LocalDateTime userCreateTime;
 	private String userProfileDescription;
 	private String userProfileImage;

@@ -64,10 +64,15 @@ public class UserService {
 			int width = bufferedImage.getWidth();
 			int height = bufferedImage.getHeight();
 			if (width != height) {
+				System.out.println("###########################");
+				System.out.println(width);
+				System.out.println(height);
+				System.out.println("###########################");
 				throw InsuUtils.throwNewResponseStatusException(HttpStatus.BAD_REQUEST, "가로 세로가 일치하지 않음");
 			}
 
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw InsuUtils.throwNewResponseStatusException(HttpStatus.BAD_REQUEST, "올바른 이미지가 아님");
 		}
 
@@ -98,9 +103,9 @@ public class UserService {
 			followRepository.delete(deleteFollow);
 			ArrayList<FollowDTO> follows = preprocessingFollow(followRepository.getFollower(targetUserNo));
 
-			map.put("Follower", (Object)follows);
-			map.put("type", (String)"unfollow");
-			return new CommonResponseDTO(map,HttpStatus.ACCEPTED);
+			map.put("Follower", follows);
+			map.put("type", "unfollow");
+			return new CommonResponseDTO(map, HttpStatus.ACCEPTED);
 		}
 		Users user = userRepository.getById(userNo);
 		Users targetUser = userRepository.getById(targetUserNo);
@@ -108,9 +113,9 @@ public class UserService {
 		followRepository.save(newFollow);
 		ArrayList<FollowDTO> follows = preprocessingFollow(followRepository.getFollower(targetUserNo));
 
-		map.put("Follower", (Object)follows); 
-		map.put("type", (String)"follow");
-		return new CommonResponseDTO(map,HttpStatus.ACCEPTED);
+		map.put("Follower", follows);
+		map.put("type", "follow");
+		return new CommonResponseDTO(map, HttpStatus.ACCEPTED);
 
 	}
 
@@ -152,12 +157,13 @@ public class UserService {
 
 		return response;
 	}
-	//닉네임을 키워드로하는 유저 조회
+
+	// 닉네임을 키워드로하는 유저 조회
 	public CommonResponseDTO getUserBykeyWord(Long userNo, String keyWord) {
 		ArrayList<SearchUsersDTO> userDTOs = userRepository.searchUserByKeyWord(userNo, keyWord);
-		Map<String,Object> body = new HashMap<String,Object>();
-		body.put("result",userDTOs);
-		return new CommonResponseDTO(body,HttpStatus.OK);
+		Map<String, Object> body = new HashMap<String, Object>();
+		body.put("result", userDTOs);
+		return new CommonResponseDTO(body, HttpStatus.OK);
 	}
 
 	// 팔로우 팔로워 전처리
