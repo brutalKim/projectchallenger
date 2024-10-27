@@ -28,6 +28,7 @@ public class LoginService {
 
 		AfterLoginInfoDTO afterLoginInfoDTO = new AfterLoginInfoDTO();
 
+		afterLoginInfoDTO.setUserNo(requestUserNo);
 		afterLoginInfoDTO.setUserCreateTime(requestUser.getSignupDate());
 		afterLoginInfoDTO.setUserLocationRef(requestUser.getLocationRef());
 		afterLoginInfoDTO.setUserNickName(requestUser.getNickname());

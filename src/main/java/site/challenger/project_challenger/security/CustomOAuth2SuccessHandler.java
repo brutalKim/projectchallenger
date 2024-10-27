@@ -23,7 +23,6 @@ import jakarta.servlet.http.HttpServletResponse;
 // >>>>>>> main
 import lombok.RequiredArgsConstructor;
 import site.challenger.project_challenger.constants.MyRole;
-import site.challenger.project_challenger.constants.SecurityConstants;
 import site.challenger.project_challenger.repository.UserRepository;
 
 @Component
@@ -59,7 +58,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
 		var jwtToken = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
 		// 헤더에 추가
-		response.addHeader(SecurityConstants.JWT_HEADER, "Bearer " + jwtToken);
+//		response.addHeader(SecurityConstants.JWT_HEADER, "Bearer " + jwtToken);
 
 		// < 쿠키 테스트
 		Cookie jwtCookie = new Cookie("JWT_TOKEN", jwtToken);

@@ -14,7 +14,6 @@ import site.challenger.project_challenger.domain.UserRoleRef;
 import site.challenger.project_challenger.domain.Users;
 import site.challenger.project_challenger.domain.UsersRole;
 import site.challenger.project_challenger.dto.CommonResponseDTO;
-import site.challenger.project_challenger.dto.authentication.SignupResDTO;
 import site.challenger.project_challenger.dto.authentication.SignupServiceReqDTO;
 import site.challenger.project_challenger.repository.LocationRefRepository;
 import site.challenger.project_challenger.repository.OauthRefRepository;
@@ -23,6 +22,7 @@ import site.challenger.project_challenger.repository.UsersAuthorityRefRepository
 import site.challenger.project_challenger.repository.UsersAuthorityRepository;
 import site.challenger.project_challenger.repository.UsersRoleRefRepository;
 import site.challenger.project_challenger.repository.UsersRoleRepository;
+import site.challenger.project_challenger.util.InsuUtils;
 import site.challenger.project_challenger.util.JwtTokenManagement;
 
 @Transactional
@@ -37,54 +37,71 @@ public class UserManegementService {
 	private final UsersAuthorityRepository usersAuthorityRepository;
 	private final UsersAuthorityRefRepository usersAuthorityRefRepository;
 	private final JwtTokenManagement jwtTokenManagement;
-	
+
 	public CommonResponseDTO saveUser(SignupServiceReqDTO signupServiceReqDTO) {
 		CommonResponseDTO res = null;
 		try {
-			if(checkUser(signupServiceReqDTO.getId())) {
-				//signupResDTO = new SignupResDTO(false,"중복된 아이디");
-				res = new CommonResponseDTO(HttpStatus.CONFLICT,"중복된 아이디");
-			}else {
-			//locationRef를 참조
-			LocationRef locationRef = locationRefRepository.findByOpt1AndOpt2(signupServiceReqDTO.getLocationOpt1(), signupServiceReqDTO.getLocationOpt2());
-			//DTO에서 정보 추출
-			String uid = signupServiceReqDTO.getId();
-			String nickname = signupServiceReqDTO.getNickname();
-			int oauthRefNo = signupServiceReqDTO.getOauthRef();
-			//유저정보 저장
-			//지역정보 조회
-			Optional<OauthRef> OptionalOuathRef = oauthRefRepository.findById((long) oauthRefNo);
-			//지역정보 무결성확인
-			if(OptionalOuathRef.isPresent()) {
-				OauthRef oauthRef = OptionalOuathRef.get();
-				Users user = new Users(uid,nickname,null, oauthRef, locationRef , true);
-				userRepository.save(user);
-				Optional<UserRoleRef> optionalUserRoleRef = usersRoleRefRepository.findByRole("ROLE_USER");
-				UserRoleRef userRoleRef = optionalUserRoleRef.get();
-				usersRoleRepository.save(new UsersRole(user,userRoleRef));
-				String token = jwtTokenManagement.issueJwtToken(uid);
-				if(token == null) {
-					//signupResDTO = new SignupResDTO(false,"비회원");
-					res = new CommonResponseDTO(HttpStatus.BAD_REQUEST,"비회원");
-				}else {
-					//signupResDTO = new SignupResDTO(true,token);
-					res = new CommonResponseDTO(HttpStatus.CREATED,token); 
+			if (doesNickNameExist(signupServiceReqDTO.getNickname())) {
+				throw InsuUtils.throwNewResponseStatusException(HttpStatus.CONFLICT, "중복된 닉네임");
+			}
+
+			if (checkUser(signupServiceReqDTO.getId())) {
+				throw InsuUtils.throwNewResponseStatusException(HttpStatus.CONFLICT, "이미 회원");
+			} else {
+				// locationRef를 참조
+				LocationRef locationRef = locationRefRepository.findByOpt1AndOpt2(signupServiceReqDTO.getLocationOpt1(),
+						signupServiceReqDTO.getLocationOpt2());
+				// DTO에서 정보 추출
+				String uid = signupServiceReqDTO.getId();
+				String nickname = signupServiceReqDTO.getNickname();
+				int oauthRefNo = signupServiceReqDTO.getOauthRef();
+				// 유저정보 저장
+				// 지역정보 조회
+				Optional<OauthRef> OptionalOuathRef = oauthRefRepository.findById((long) oauthRefNo);
+				// 지역정보 무결성확인
+				if (OptionalOuathRef.isPresent()) {
+					OauthRef oauthRef = OptionalOuathRef.get();
+					Users user = new Users(uid, nickname, null, oauthRef, locationRef, true);
+					userRepository.save(user);
+					Optional<UserRoleRef> optionalUserRoleRef = usersRoleRefRepository.findByRole("ROLE_USER");
+					UserRoleRef userRoleRef = optionalUserRoleRef.get();
+					usersRoleRepository.save(new UsersRole(user, userRoleRef));
+
+					// transactional 이라 토큰 발행 시 userNo이 안들어가서 여기서 토큰 발급이 의미가 없음 && 유저 닉네임 중복검사가 필요함.
+
+//					String token = jwtTokenManagement.issueJwtToken(uid);
+//					if (token == null) {
+//						// signupResDTO = new SignupResDTO(false,"비회원");
+//						res = new CommonResponseDTO(HttpStatus.BAD_REQUEST, "비회원");
+//					} else {
+//						// signupResDTO = new SignupResDTO(true,token);
+//						res = new CommonResponseDTO(HttpStatus.CREATED, "" + oauthRefNo);
+//					}
+
+					res = new CommonResponseDTO(HttpStatus.CREATED, "" + oauthRefNo);
+
+					// 의미없음
 				}
 			}
-			}
-		}catch (Exception e) {
-            // 그 외의 모든 예외 처리
-            e.printStackTrace();
-            res = new CommonResponseDTO(HttpStatus.CONFLICT, e.toString());
-        }finally {
-        	return res;
-        }
+		} catch (Exception e) {
+			// 그 외의 모든 예외 처리
+			e.printStackTrace();
+			res = new CommonResponseDTO(HttpStatus.CONFLICT, e.getMessage());
+		}
+		return res;
 	}
+
 	private boolean checkUser(String id) {
 		return userRepository.existsByUid(id);
 	}
-	public String login (Long userId) {
-		Users user = userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "There's no such user"));
+
+	private boolean doesNickNameExist(String nickname) {
+		return userRepository.existsByNickname(nickname);
+	}
+
+	public String login(Long userId) {
+		Users user = userRepository.findById(userId)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "There's no such user"));
 		return user.getNickname();
 	}
 }

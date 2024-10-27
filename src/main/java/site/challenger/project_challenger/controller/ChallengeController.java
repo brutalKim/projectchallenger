@@ -124,7 +124,7 @@ public class ChallengeController {
 		return response;
 	}
 
-	// 챌린지 구독 하기/취소 보류
+	// 챌린지 구독 하기/취소
 	@GetMapping("/subscribe/{chNo}")
 	public CommonResponseDTO subscribeChallenge(Authentication authentication, HttpServletRequest request,
 			@PathVariable long chNo) {
