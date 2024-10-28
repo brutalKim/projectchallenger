@@ -1,9 +1,9 @@
 package site.challenger.project_challenger.repository;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -26,5 +26,7 @@ public interface UserRepository extends JpaRepository<Users, Long> {
 		       "LEFT OUTER JOIN Follow follow ON follow.users.no = :userNo AND users.no = follow.followUsers.no "+
 		       "WHERE users.nickname LIKE CONCAT('%', :keyWord, '%')")
 		ArrayList<SearchUsersDTO> searchUserByKeyWord(@Param("userNo") Long userNo, @Param("keyWord") String keyWord);
-
+	//유저들 존재 검사
+	@Query("SELECT COUNT(u) FROM Users u WHERE u.no IN :userNos")
+	int countExistingUser(@Param("userNos") List<Long> userNos); 
 }
