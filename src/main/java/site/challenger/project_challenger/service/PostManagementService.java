@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import site.challenger.project_challenger.domain.Challenge;
 import site.challenger.project_challenger.domain.ChallengeHasPost;
+import site.challenger.project_challenger.domain.Follow;
 import site.challenger.project_challenger.domain.Post;
 import site.challenger.project_challenger.domain.PostComment;
 import site.challenger.project_challenger.domain.PostImage;
@@ -30,6 +31,7 @@ import site.challenger.project_challenger.dto.post.PostRecommendServiceReqDTO;
 import site.challenger.project_challenger.dto.post.PostWriteServiceReqDTO;
 import site.challenger.project_challenger.repository.ChallengeHasPostRepository;
 import site.challenger.project_challenger.repository.ChallengeRepository;
+import site.challenger.project_challenger.repository.FollowRepository;
 import site.challenger.project_challenger.repository.PostCommentRepository;
 import site.challenger.project_challenger.repository.PostRecommendRepository;
 import site.challenger.project_challenger.repository.PostRepository;
@@ -52,6 +54,7 @@ public class PostManagementService {
 	private final PostCommentRepository postCommentRepository;
 	private final ChallengeRepository challengeRepository;
 	private final ChallengeHasPostRepository challengeHasPostRepository;
+	private final FollowRepository followRepository;
 	//포스트 이미지 관리 컴포넌트
 	private final PostImageManager postImageManager;
 	
@@ -91,6 +94,7 @@ public class PostManagementService {
 						}
 					}
 				}
+				// TODO : 이후 조회하고있는 포스트에 맞게 응답할것
 				res = new CommonResponseDTO(HttpStatus.CREATED);
 			}else {
 				res = new CommonResponseDTO(HttpStatus.NOT_FOUND,"존재하지 않는 작성자");
@@ -114,21 +118,39 @@ public class PostManagementService {
 		map.put("posts",(Object)postDTOs);
 		return new CommonResponseDTO(map,HttpStatus.OK);
 	}
+	
+	//팔로우 기반 Post 조회
+	@Transactional(readOnly = true)
+	public CommonResponseDTO getPostByFollow(Long userNo,int page) {
+		ArrayList<Follow> follows = followRepository.getFollow(userNo);
+		List<Long> followsNo = new ArrayList<>();
+		for(Follow f :follows) {
+			followsNo.add(f.getFollowUsers().getNo());
+		}
+		return getByUserId(followsNo,userNo,page);
+	}
+	
+	//지역 기반 post 조회
+	//TODO:미완
+	@Transactional(readOnly = true)
+	public CommonResponseDTO getPostByRegion(Long userNo,int page) {
+		
+	}
 	//유저아이디로 Post조회
 	@Transactional(readOnly = true)
-	public CommonResponseDTO getByUserId(Long writerNo ,Long userNo, int page) {
+	public CommonResponseDTO getByUserId(List<Long> writerNo ,Long userNo, int page) {
 		CommonResponseDTO res = null;
 		try {
-			Optional<Users>optionalWriter = userRepository.findById(writerNo);
+			//존재하는 유저인지
+			Boolean areAllUsersExists = userRepository.countExistingUser(writerNo) == writerNo.size();
 			Optional<Users>optionalUser = userRepository.findById(userNo);
-			if(optionalWriter.isPresent() && optionalUser.isPresent()) {
-				Users writer = optionalWriter.get();
+			if(areAllUsersExists && optionalUser.isPresent()) {
 				Users user = optionalUser.get();
 				Pageable pageable = PageRequest.of(page, 10);
-				List<PostDTO> postsArray = postRepository.getPostByWriterAndUser(writer.getNo(),user.getNo(),pageable).getContent();
+				List<PostDTO> postsArray = postRepository.getPostByWriterAndUser(writerNo,user.getNo(),pageable).getContent();
 				ArrayList<PostDTO>postsArrayList = postPreprocessing(postsArray);
 				if(postsArray.size() == 0) {
-					res = new CommonResponseDTO(HttpStatus.NOT_FOUND,writer.getNickname()+"이 작성한 글을 찾을 수 없습니다.");
+					res = new CommonResponseDTO(HttpStatus.NOT_FOUND,"작성한 글을 찾을 수 없습니다.");
 				}else {
 					Map<String,Object> map = new HashMap<>();
 					map.put("posts", (Object) postsArrayList);
@@ -153,11 +175,6 @@ public class PostManagementService {
 		try {
 			Pageable pageable = PageRequest.of(page, 10);
 			List<PostDTO> postsArray = postRepository.getPostByKeyword(keyWord, userNo, pageable).getContent();
-			
-			
-			System.out.println(postsArray.size());
-			
-			
 			ArrayList<PostDTO> postDTOs = postPreprocessing(postsArray);
 			Map<String,Object> map = new HashMap<>();
 			map.put("posts", (Object) postDTOs);

@@ -22,12 +22,14 @@ import site.challenger.project_challenger.dto.post.PostCommentReqDTO;
 import site.challenger.project_challenger.dto.post.PostRecommendServiceReqDTO;
 import site.challenger.project_challenger.dto.post.PostWriteServiceReqDTO;
 import site.challenger.project_challenger.service.PostManagementService;
+import site.challenger.project_challenger.service.UserService;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/post")
 public class PostController {
 	private final PostManagementService postManagementService;
+	private final UserService userService;
 	//포스트 작성
 	@PostMapping("")
 	public CommonResponseDTO writePost(
@@ -42,7 +44,7 @@ public class PostController {
 
 	//포스트 조회
 	@GetMapping("")
-	public CommonResponseDTO getPost(@RequestParam(required = false) Long writerId ,@RequestParam(required = false) String type,@RequestParam(required = true) int page , @RequestParam(required = false) String keyWord , Authentication authentication) {
+	public CommonResponseDTO getPost(@RequestParam(required = false) List<Long> writerId ,@RequestParam(required = false) String type,@RequestParam(required = true) int page , @RequestParam(required = false) String keyWord , Authentication authentication) {
 		Long userId = Long.parseLong(authentication.getName());
 		//writer Id가 존재하지 않을 경우 사용자의 포스트 접근
 		switch(type) {
@@ -50,13 +52,15 @@ public class PostController {
 				return null;
 			case"search":
 				return postManagementService.getByKeyWord(userId, page, keyWord);
-			case"follow:":
-				return null;
+			case"follow":
+				return postManagementService.getPostByFollow(userId, page);
 			case "recommend":
 				return postManagementService.getRecommendPost(userId, page);
 			case "user":
 				if(writerId==null) {
-					return postManagementService.getByUserId(userId,userId,page);
+					List<Long> writerNo = new ArrayList<>();
+					writerNo.add(userId);
+					return postManagementService.getByUserId(writerNo,userId,page);
 				}
 				return postManagementService.getByUserId(writerId, userId , page);
 			default:
@@ -74,7 +78,14 @@ public class PostController {
 	@PostMapping("/comment")
 	public CommonResponseDTO writeComment(Authentication authentication, @RequestBody PostCommentReqDTO req) {
 		Long writerNo = Long.parseLong(authentication.getName());
-		return postManagementService.writeComment(writerNo, req.getPostNo(), req.getContent());
+		return postManagementService.writeComment(writerNo, req.getPostNo(), req.getContent()); 
+		
+	}
+	
+	//TODO:포스트 코멘트 추천
+	@GetMapping("/comment/recommend")
+	public CommonResponseDTO recommendComment(Authentication authentication,@RequestParam(required = true) Long no) {
+		Long userId = Long.parseLong(authentication.getName());
 		
 	}
 	//포스트 코멘트 조회
