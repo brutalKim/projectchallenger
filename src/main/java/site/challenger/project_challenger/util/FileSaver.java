@@ -38,7 +38,6 @@ public class FileSaver {
 		String savedFileName = "";
 
 		if (file != null && !file.isEmpty()) {
-
 			String originalFileName = file.getOriginalFilename();
 			String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
 			savedFileName = UUID.randomUUID().toString() + fileExtension;
