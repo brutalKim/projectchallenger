@@ -17,11 +17,9 @@ import org.springframework.web.multipart.MultipartFile;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import site.challenger.project_challenger.dto.CommonResponseDTO;
-
-import site.challenger.project_challenger.service.ChallengeService;
-
+import site.challenger.project_challenger.dto.user.TargetRequestDTO;
 import site.challenger.project_challenger.dto.user.UserRequestDTO;
-
+import site.challenger.project_challenger.service.ChallengeService;
 import site.challenger.project_challenger.service.UserService;
 import site.challenger.project_challenger.util.InsuUtils;
 
@@ -66,6 +64,14 @@ public class UserController {
 		return userService.getUserDetail(userNo, targetNo);
 	}
 
+	// 유저 상세정보 2 for follower,follow list
+	@PostMapping("/detailF")
+	public CommonResponseDTO getDetailF(Authentication authentication, @RequestBody TargetRequestDTO targetRequestDTO) {
+		long requestUserNo = InsuUtils.getRequestUserNo(authentication);
+
+		return userService.getUserDetailF(requestUserNo, targetRequestDTO.getTargetNoArray());
+	}
+
 	// 유저 follow
 	@GetMapping("/follow")
 	public CommonResponseDTO followUser(Authentication authentication, @RequestParam(required = true) Long userNo) {
@@ -73,15 +79,16 @@ public class UserController {
 		return userService.followUser(userSelfNo, userNo);
 	}
 
-	//유저 구독중 챌린지 조회
+	// 유저 구독중 챌린지 조회
 	@GetMapping("/subchallenge")
-	public CommonResponseDTO getSubChallenge(Authentication authentication, @RequestParam(required = false)Long targetUserNo) {
-		//타겟 유저가 null일경우 자기가 구독한 챌린지 조회
+	public CommonResponseDTO getSubChallenge(Authentication authentication,
+			@RequestParam(required = false) Long targetUserNo) {
+		// 타겟 유저가 null일경우 자기가 구독한 챌린지 조회
 		Long userNo = Long.parseLong(authentication.getName());
-		if(targetUserNo == null) {
+		if (targetUserNo == null) {
 			return challengeService.getAllSubcribedChallengeByUserNo(userNo, userNo, 0);
-		} 
-		//타겟유저가 존재할경우 타겟유저의 구독한 챌린지 조회
+		}
+		// 타겟유저가 존재할경우 타겟유저의 구독한 챌린지 조회
 		return challengeService.getAllSubcribedChallengeByUserNo(targetUserNo, userNo, 0);
 	}
 
@@ -100,13 +107,13 @@ public class UserController {
 	public CommonResponseDTO isExistNickName(@RequestParam(required = true) String nickname) {
 		return userService.existsByNickName(nickname);
 	}
-	
-	//키워드 기반 유저 조회
+
+	// 키워드 기반 유저 조회
 	@GetMapping("/search")
-	public CommonResponseDTO searchUser(Authentication authentication, @RequestParam(required = true)String keyword) {
+	public CommonResponseDTO searchUser(Authentication authentication, @RequestParam(required = true) String keyword) {
 		Long userNo = Long.parseLong(authentication.getName());
 		System.out.println(keyword);
 		return userService.getUserBykeyWord(userNo, keyword);
 	}
-	
+
 }
