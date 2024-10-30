@@ -10,6 +10,5 @@ import site.challenger.project_challenger.domain.PostComment;
 @Repository
 public interface PostCommentRepository extends JpaRepository<PostComment, Long> {
 	Long countByPostNo(Long no);
-
 	ArrayList<PostComment> findByPostNo(Long postNo);
 }
