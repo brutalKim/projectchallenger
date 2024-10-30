@@ -3,6 +3,7 @@ package site.challenger.project_challenger.service;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
@@ -12,7 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import site.challenger.project_challenger.domain.Follow;
@@ -23,6 +26,7 @@ import site.challenger.project_challenger.dto.user.SearchUsersDTO;
 import site.challenger.project_challenger.dto.user.UserRequestDTO;
 import site.challenger.project_challenger.repository.FollowRepository;
 import site.challenger.project_challenger.repository.PostRepository;
+import site.challenger.project_challenger.repository.ProfileRepository;
 import site.challenger.project_challenger.repository.UserRepository;
 import site.challenger.project_challenger.util.FileSaver;
 import site.challenger.project_challenger.util.InsuUtils;
@@ -34,6 +38,7 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final PostRepository postRepository;
 	private final FollowRepository followRepository;
+	private final ProfileRepository profileRepository;
 
 	// 이미지 지우기
 
@@ -92,6 +97,32 @@ public class UserService {
 		map.put("Follow", follows);
 		map.put("Follower", followers);
 		return new CommonResponseDTO(map, HttpStatus.OK);
+	}
+
+	// insu 1028 for follow, followers
+	public CommonResponseDTO getUserDetailF(long requestUserNo, long[] targetUserNoArray) {
+
+		Map<String, Object> body = new HashMap<>();
+		List<TargetUserDetail> targetUserList = new ArrayList<>();
+		for (long targetUserNo : targetUserNoArray) {
+			Users targetUser = userRepository.findById(targetUserNo)
+					.orElseThrow(() -> InsuUtils.throwNewResponseStatusException("해당 유저는 존재하지 않음"));
+			Long postCount = postRepository.getPostCount(targetUserNo);
+
+			boolean isFollowed = followRepository.existsByUserNoAndTargetUserNo(requestUserNo, targetUserNo);
+			String userProfileImage = profileRepository.findByUser(targetUser)
+					.orElseThrow(() -> InsuUtils.throwNewResponseStatusException("타겟 유저의 프로파일이 존재하지 않음"))
+					.getSavedName();
+			ArrayList<FollowDTO> follows = preprocessingFollow(followRepository.getFollow(targetUserNo));
+			ArrayList<FollowDTO> followers = preprocessingFollow(followRepository.getFollower(targetUserNo));
+
+			TargetUserDetail targetUserDetail = new TargetUserDetail(targetUser.getNickname(), targetUser.getNo(),
+					isFollowed, userProfileImage, follows, followers, postCount);
+			targetUserList.add(targetUserDetail);
+		}
+		body.put("targetUserList", targetUserList);
+
+		return new CommonResponseDTO(body, HttpStatus.OK);
 	}
 
 	// 유저 팔로우
@@ -186,5 +217,21 @@ public class UserService {
 			this.nickname = nickname;
 			this.userNo = userNo;
 		}
+	}
+
+	// getUserDeatailF 용 1028 insu
+	@Getter
+	@Setter
+	@AllArgsConstructor
+	@NoArgsConstructor
+	private class TargetUserDetail {
+		private String nickname;
+		private long userNo;
+		private boolean isFollowed;
+		private String userProfileImage;
+		private ArrayList<FollowDTO> follows;
+		private ArrayList<FollowDTO> followers;
+		private long postCount;
+
 	}
 }

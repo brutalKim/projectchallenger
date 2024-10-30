@@ -1,6 +1,5 @@
 package site.challenger.project_challenger.controller;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,84 +29,90 @@ import site.challenger.project_challenger.service.UserService;
 public class PostController {
 	private final PostManagementService postManagementService;
 	private final UserService userService;
-	//포스트 작성
+
+	// 포스트 작성
 	@PostMapping("")
-	public CommonResponseDTO writePost(
-	        Authentication authentication, 
-	        @RequestParam("content") String content, 
-	        @RequestParam(value = "images", required = false) List<MultipartFile> images
-	        ,@RequestParam(required = false) List<Long>tagChallenges) {
-	    Long userId = Long.parseLong(authentication.getName());
-	    PostWriteServiceReqDTO req = new PostWriteServiceReqDTO(userId, content, images,tagChallenges);
-	    return postManagementService.writePost(req);
+	public CommonResponseDTO writePost(Authentication authentication, @RequestParam("content") String content,
+			@RequestParam(value = "images", required = false) List<MultipartFile> images,
+			@RequestParam(required = false) List<Long> tagChallenges) {
+		Long userId = Long.parseLong(authentication.getName());
+		PostWriteServiceReqDTO req = new PostWriteServiceReqDTO(userId, content, images, tagChallenges);
+		return postManagementService.writePost(req);
 	}
 
-	//포스트 조회
+	// 포스트 조회
 	@GetMapping("")
-	public CommonResponseDTO getPost(@RequestParam(required = false) List<Long> writerId ,@RequestParam(required = false) String type,@RequestParam(required = true) int page , @RequestParam(required = false) String keyWord , Authentication authentication) {
+	public CommonResponseDTO getPost(@RequestParam(required = false) List<Long> writerId,
+			@RequestParam(required = false) String type, @RequestParam(required = true) int page,
+			@RequestParam(required = false) String keyWord, Authentication authentication) {
 		Long userId = Long.parseLong(authentication.getName());
-		//writer Id가 존재하지 않을 경우 사용자의 포스트 접근
-		switch(type) {
-			case"region":
-				return null;
-			case"search":
-				return postManagementService.getByKeyWord(userId, page, keyWord);
-			case"follow":
-				return postManagementService.getPostByFollow(userId, page);
-			case "recommend":
-				return postManagementService.getRecommendPost(userId, page);
-			case "user":
-				if(writerId==null) {
-					List<Long> writerNo = new ArrayList<>();
-					writerNo.add(userId);
-					return postManagementService.getByUserId(writerNo,userId,page);
-				}
-				return postManagementService.getByUserId(writerId, userId , page);
-			default:
-				return null;
+		// writer Id가 존재하지 않을 경우 사용자의 포스트 접근
+		switch (type) {
+		case "region":
+			return null;
+		case "search":
+			return postManagementService.getByKeyWord(userId, page, keyWord);
+		case "follow":
+			return postManagementService.getPostByFollow(userId, page);
+		case "recommend":
+			return postManagementService.getRecommendPost(userId, page);
+		case "user":
+			if (writerId == null) {
+				List<Long> writerNo = new ArrayList<>();
+				writerNo.add(userId);
+				return postManagementService.getByUserId(writerNo, userId, page);
+			}
+			return postManagementService.getByUserId(writerId, userId, page);
+		default:
+			return null;
 		}
-		
+
 	}
-	//포스트 좋아요
-	@GetMapping("/recommend") 
-	public CommonResponseDTO recommend(Authentication authentication,@RequestParam Long postNo) {
+
+	// 포스트 좋아요
+	@GetMapping("/recommend")
+	public CommonResponseDTO recommend(Authentication authentication, @RequestParam Long postNo) {
 		Long userNo = Long.parseLong(authentication.getName());
-		return postManagementService.recommend(new PostRecommendServiceReqDTO(userNo,postNo));
+		return postManagementService.recommend(new PostRecommendServiceReqDTO(userNo, postNo));
 	}
-	//포스트 코멘트 작성
+
+	// 포스트 코멘트 작성
 	@PostMapping("/comment")
 	public CommonResponseDTO writeComment(Authentication authentication, @RequestBody PostCommentReqDTO req) {
 		Long writerNo = Long.parseLong(authentication.getName());
-		return postManagementService.writeComment(writerNo, req.getPostNo(), req.getContent()); 
-		
+		return postManagementService.writeComment(writerNo, req.getPostNo(), req.getContent());
+
 	}
-	
-	//TODO:포스트 코멘트 추천
+
+	// TODO:포스트 코멘트 추천
 	@GetMapping("/comment/recommend")
-	public CommonResponseDTO recommendComment(Authentication authentication,@RequestParam(required = true) Long no) {
+	public CommonResponseDTO recommendComment(Authentication authentication, @RequestParam(required = true) Long no) {
 		Long userId = Long.parseLong(authentication.getName());
-		
+		return null;
 	}
-	//포스트 코멘트 조회
+
+	// 포스트 코멘트 조회
 	@GetMapping("/comment")
-	public CommonResponseDTO Comment(@RequestParam Long postNo){
+	public CommonResponseDTO Comment(@RequestParam Long postNo) {
 		return postManagementService.getComment(postNo);
 	}
-	//삭제는 추후 수정
-	//포스트 코멘트 삭제
+
+	// 삭제는 추후 수정
+	// 포스트 코멘트 삭제
 	@DeleteMapping("/comment")
-	public ResponseEntity<String> deleteComment(@RequestParam Long commentNo, Authentication authentication){
+	public ResponseEntity<String> deleteComment(@RequestParam Long commentNo, Authentication authentication) {
 		Long writerNo = Long.parseLong(authentication.getName());
 		HttpStatus res = postManagementService.deleteComment(commentNo, writerNo);
-		return new ResponseEntity<String>("Comment삭제 완료",res);
+		return new ResponseEntity<String>("Comment삭제 완료", res);
 	}
-	//삭제는 추후 수정
-	//포스트 삭제
+
+	// 삭제는 추후 수정
+	// 포스트 삭제
 	@DeleteMapping("")
 	public ResponseEntity<String> deletePost(@RequestParam Long PostNo, Authentication authentication) {
 		Long userId = Long.parseLong(authentication.getName());
-		HttpStatus res = postManagementService.deletePost(PostNo, userId); 
-		return new ResponseEntity<String>("삭제 완료",res);
+		HttpStatus res = postManagementService.deletePost(PostNo, userId);
+		return new ResponseEntity<String>("삭제 완료", res);
 	}
-	
+
 }
