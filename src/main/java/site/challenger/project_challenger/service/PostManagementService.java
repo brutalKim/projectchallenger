@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import site.challenger.project_challenger.domain.Challenge;
 import site.challenger.project_challenger.domain.ChallengeHasPost;
+import site.challenger.project_challenger.domain.CommentRecommend;
 import site.challenger.project_challenger.domain.Follow;
 import site.challenger.project_challenger.domain.Post;
 import site.challenger.project_challenger.domain.PostComment;
@@ -31,6 +32,7 @@ import site.challenger.project_challenger.dto.post.PostRecommendServiceReqDTO;
 import site.challenger.project_challenger.dto.post.PostWriteServiceReqDTO;
 import site.challenger.project_challenger.repository.ChallengeHasPostRepository;
 import site.challenger.project_challenger.repository.ChallengeRepository;
+import site.challenger.project_challenger.repository.CommentRecommendRepository;
 import site.challenger.project_challenger.repository.FollowRepository;
 import site.challenger.project_challenger.repository.PostCommentRepository;
 import site.challenger.project_challenger.repository.PostRecommendRepository;
@@ -57,7 +59,7 @@ public class PostManagementService {
 	private final FollowRepository followRepository;
 	//포스트 이미지 관리 컴포넌트
 	private final PostImageManager postImageManager;
-	
+	private final CommentRecommendRepository commentRecommendRepository;
 	//Post작성
 	@Transactional
 	public CommonResponseDTO writePost(PostWriteServiceReqDTO req) {
@@ -264,7 +266,7 @@ public class PostManagementService {
 	}
 	//PostNo로 작성된 comment 조회
 	@Transactional(readOnly = true)
-	public CommonResponseDTO getComment(Long postNo) {
+	public CommonResponseDTO getComment(Long userNo,Long postNo) {
 		CommonResponseDTO res = null;
 		Map<String,Object> map = new HashMap<>();
 		try {
@@ -273,8 +275,12 @@ public class PostManagementService {
 				Post post = optionalPost.get();
 				List <Comment> commentArrayList = new ArrayList<>();
 				List<PostComment> comments = post.getComments();
+				Users user = userRepository.getById(userNo);
+				//TODO:포스트 조회시 이미 추천한 포스트인지 아닌지가 안됨 아마 post.getComments에서 가져오면 안될듯함
 				for(PostComment comment : comments) {
-					commentArrayList.add(new Comment(comment.getNo(),comment.getUsers().getNickname(),comment.getUsers().getNo(),comment.getContent()));
+					boolean recommended = commentRecommendRepository.existsByPostCommentAndRecommendUsers(comment.getNo(), userNo);
+					System.out.println(recommended);
+					commentArrayList.add(new Comment(comment.getNo(),comment.getUsers().getNickname(),comment.getUsers().getNo(),comment.getRecommend(),comment.getContent(),recommended));
 				}
 				map.put("comments", commentArrayList);
 				//legacy Code
@@ -290,6 +296,40 @@ public class PostManagementService {
 			return res;
 		}
 	}
+	//comment 추천
+	@Transactional
+	public CommonResponseDTO recommendComment(Long userNo,Long commentNo) {
+		Optional<Users> user = userRepository.findById(userNo);
+		Optional<PostComment> targetComment = postCommentRepository.findById(commentNo);
+		if(user.isPresent() && targetComment.isPresent()) {
+			Optional<CommentRecommend> recommendComment = commentRecommendRepository.findByPostCommentAndRecommendUsers(targetComment.get(),user.get());
+			//유저가 타겟코멘트를 추천했을 경우
+			if(recommendComment.isPresent()) {
+				//연관관게삭제
+				commentRecommendRepository.delete(recommendComment.get());
+				//DTO생성
+				Long recommend = targetComment.get().getRecommend();
+				Map<String,Object> map = new HashMap<>();
+				map.put("recommend", false);
+				map.put("recommendCount", recommend);
+				return new CommonResponseDTO(map, HttpStatus.ACCEPTED);
+			}
+			//유저가 타겟코멘트를 추천하지 않았을 경우
+			//연관관계생성
+			if(recommendComment.isEmpty()) {
+				CommentRecommend commentRecommend = new CommentRecommend(targetComment.get(),user.get());
+				commentRecommendRepository.save(commentRecommend);
+				Map<String,Object> map = new HashMap<>();
+				map.put("recommend", true);
+				Long recommendCount = targetComment.get().getRecommend();
+				map.put("recommendCount", recommendCount);
+				return new CommonResponseDTO(map,HttpStatus.ACCEPTED);
+			}
+		}
+		//잘못된 요청 시 리턴
+		return new CommonResponseDTO(HttpStatus.BAD_REQUEST);
+	}
+	
 	//삭제는 아직 테스트 and 구현 안해봤음 테스트 or 구현 이후 CommonResponseDTO로 return value 수정할 예정
 	//Post 삭제
 	@Transactional
@@ -323,7 +363,9 @@ public class PostManagementService {
 		private Long CommentNo;
 		private String nickname;
 		private Long userId;
+		private Long recommend;
 		private String Content;
+		private boolean isRecommended;
 	}
 	//포스트 DTO 전처리
 	private ArrayList<PostDTO> postPreprocessing(List<PostDTO> prePostData){
@@ -349,8 +391,11 @@ public class PostManagementService {
 			postDTO.setImg(imgs);
 			ArrayList<ChallengeHasPost> chps = challengeHasPostRepository.findByPostNo(post.getNo()); 
 			for(ChallengeHasPost chp : chps) {
-				String title = challengeRepository.findActiveById(chp.getChallengeHasPostPrimaryKey().getChallengeNo()).get().getTitle();
-				postDTO.addTaggedChallenge(title, chp.getChallengeHasPostPrimaryKey().getChallengeNo());
+				Optional<Challenge> challenge = challengeRepository.findActiveById(chp.getChallengeHasPostPrimaryKey().getChallengeNo());
+				if(challenge.isPresent()) {
+					String title = challenge.get().getTitle();
+					postDTO.addTaggedChallenge(title, chp.getChallengeHasPostPrimaryKey().getChallengeNo());
+				}
 			}
 			data.add(postDTO);
 		}
