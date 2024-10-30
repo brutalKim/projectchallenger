@@ -86,15 +86,17 @@ public class PostController {
 
 	// TODO:포스트 코멘트 추천
 	@GetMapping("/comment/recommend")
-	public CommonResponseDTO recommendComment(Authentication authentication, @RequestParam(required = true) Long no) {
+	public CommonResponseDTO recommendComment(Authentication authentication,@RequestParam(required = true) Long commentNo) {
 		Long userId = Long.parseLong(authentication.getName());
-		return null;
+		return postManagementService.recommendComment(userId, commentNo);
+
 	}
 
 	// 포스트 코멘트 조회
 	@GetMapping("/comment")
-	public CommonResponseDTO Comment(@RequestParam Long postNo) {
-		return postManagementService.getComment(postNo);
+	public CommonResponseDTO Comment(Authentication authentication,@RequestParam Long postNo){
+		Long userNo = Long.parseLong(authentication.getName());
+		return postManagementService.getComment(userNo,postNo);
 	}
 
 	// 삭제는 추후 수정

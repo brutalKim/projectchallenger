@@ -201,7 +201,7 @@ public class UserService {
 	private ArrayList<FollowDTO> preprocessingFollow(ArrayList<Follow> follows) {
 		ArrayList<FollowDTO> userList = new ArrayList<>();
 		for (Follow f : follows) {
-			userList.add(new FollowDTO(f.getUsers().getNickname(), f.getUsers().getNo()));
+			userList.add(new FollowDTO(f.getUsers().getNickname(), f.getFollowUsers().getNo()));
 		}
 		return userList;
 	}
