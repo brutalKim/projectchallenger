@@ -49,7 +49,7 @@ public class PostController {
 		// writer Id가 존재하지 않을 경우 사용자의 포스트 접근
 		switch (type) {
 		case "region":
-			return null;
+			return postManagementService.getPostByRegion(userId, page);
 		case "search":
 			return postManagementService.getByKeyWord(userId, page, keyWord);
 		case "follow":
