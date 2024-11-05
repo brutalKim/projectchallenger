@@ -76,7 +76,10 @@ public class UserController {
 	@GetMapping("/follow")
 	public CommonResponseDTO followUser(Authentication authentication, @RequestParam(required = true) Long userNo) {
 		Long userSelfNo = Long.parseLong(authentication.getName());
-		return userService.followUser(userSelfNo, userNo);
+		if(userSelfNo == userNo) {
+			return new CommonResponseDTO(HttpStatus.BAD_REQUEST);
+		}
+		return userService.followUser(userSelfNo,userNo);
 	}
 
 	// 유저 구독중 챌린지 조회
@@ -96,9 +99,7 @@ public class UserController {
 	@PostMapping("/profile")
 	public CommonResponseDTO changeUserDetail(Authentication authentication, @RequestBody UserRequestDTO userRequestDTO,
 			HttpServletRequest request) {
-
 		long requestUserNo = InsuUtils.getRequestUserNo(authentication);
-
 		return userService.changeUserDetail(requestUserNo, userRequestDTO);
 	}
 
@@ -110,10 +111,9 @@ public class UserController {
 
 	// 키워드 기반 유저 조회
 	@GetMapping("/search")
-	public CommonResponseDTO searchUser(Authentication authentication, @RequestParam(required = true) String keyword) {
+	public CommonResponseDTO searchUser(Authentication authentication, @RequestParam(required = true) String keyword,int page) {
 		Long userNo = Long.parseLong(authentication.getName());
-		System.out.println(keyword);
-		return userService.getUserBykeyWord(userNo, keyword);
+		return userService.getUserBykeyWord(userNo, keyword,page);
 	}
 
 }
