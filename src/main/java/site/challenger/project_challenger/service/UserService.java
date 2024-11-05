@@ -18,13 +18,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import site.challenger.project_challenger.constants.Common;
 import site.challenger.project_challenger.domain.Follow;
+import site.challenger.project_challenger.domain.Notice;
 import site.challenger.project_challenger.domain.Profile;
 import site.challenger.project_challenger.domain.Users;
 import site.challenger.project_challenger.dto.CommonResponseDTO;
 import site.challenger.project_challenger.dto.user.SearchUsersDTO;
 import site.challenger.project_challenger.dto.user.UserRequestDTO;
 import site.challenger.project_challenger.repository.FollowRepository;
+import site.challenger.project_challenger.repository.NoticeRepository;
 import site.challenger.project_challenger.repository.PostRepository;
 import site.challenger.project_challenger.repository.ProfileRepository;
 import site.challenger.project_challenger.repository.UserRepository;
@@ -39,6 +42,7 @@ public class UserService {
 	private final PostRepository postRepository;
 	private final FollowRepository followRepository;
 	private final ProfileRepository profileRepository;
+	private final NoticeRepository noticeRepository;
 
 	// 이미지 지우기
 
@@ -141,11 +145,20 @@ public class UserService {
 		Users user = userRepository.getById(userNo);
 		Users targetUser = userRepository.getById(targetUserNo);
 		Follow newFollow = new Follow(user, targetUser);
-		followRepository.save(newFollow);
+		newFollow = followRepository.save(newFollow);
 		ArrayList<FollowDTO> follows = preprocessingFollow(followRepository.getFollower(targetUserNo));
 
 		map.put("Follower", follows);
 		map.put("type", "follow");
+
+		// notice 추가
+		Notice notice = new Notice();
+		notice.setKind(Common.SOMEONE_FOLLOW_ME);
+		notice.setSentUsers(user);
+		notice.setTargetusers(targetUser);
+		notice.setTargetno(userNo);
+		noticeRepository.save(notice);
+
 		return new CommonResponseDTO(map, HttpStatus.ACCEPTED);
 
 	}

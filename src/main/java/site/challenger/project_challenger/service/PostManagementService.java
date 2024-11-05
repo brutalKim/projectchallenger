@@ -17,10 +17,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import site.challenger.project_challenger.constants.Common;
 import site.challenger.project_challenger.domain.Challenge;
 import site.challenger.project_challenger.domain.ChallengeHasPost;
 import site.challenger.project_challenger.domain.CommentRecommend;
 import site.challenger.project_challenger.domain.Follow;
+import site.challenger.project_challenger.domain.Notice;
 import site.challenger.project_challenger.domain.Post;
 import site.challenger.project_challenger.domain.PostComment;
 import site.challenger.project_challenger.domain.PostImage;
@@ -34,6 +36,7 @@ import site.challenger.project_challenger.repository.ChallengeHasPostRepository;
 import site.challenger.project_challenger.repository.ChallengeRepository;
 import site.challenger.project_challenger.repository.CommentRecommendRepository;
 import site.challenger.project_challenger.repository.FollowRepository;
+import site.challenger.project_challenger.repository.NoticeRepository;
 import site.challenger.project_challenger.repository.PostCommentRepository;
 import site.challenger.project_challenger.repository.PostRecommendRepository;
 import site.challenger.project_challenger.repository.PostRepository;
@@ -60,9 +63,9 @@ public class PostManagementService {
 	private final FollowRepository followRepository;
 	// 포스트 이미지 관리 컴포넌트
 	private final PostImageManager postImageManager;
-
+	private final NoticeRepository noticeRepository;
 	private final CommentRecommendRepository commentRecommendRepository;
-	//Post작성
+	// Post작성
 
 	@Transactional
 	public CommonResponseDTO writePost(PostWriteServiceReqDTO req) {
@@ -212,13 +215,20 @@ public class PostManagementService {
 				Optional<PostRecommend> optionalPostRecommend = postRecommendRepository.findById(postRecommend.getPK());
 				// 추천한 이력이 없을시 추천
 				if (optionalPostRecommend.isEmpty()) {
-					postRecommendRepository.save(postRecommend);
+					PostRecommend save = postRecommendRepository.save(postRecommend);
 					Post post = optionalPost.get();
 					post.incrementRecommend();
 					postRepository.save(post);
 					map.put("type", "recommend");
 					map.put("recommendCount", post.getRecommend());
 					res = new CommonResponseDTO(map, HttpStatus.OK);
+					// notice 추가
+					Notice notice = new Notice();
+					notice.setKind(Common.SOMEONE_LIKE_POST);
+					notice.setSentUsers(optionalRecommender.get());
+					notice.setTargetusers(post.getUsers());
+					notice.setTargetno(post.getNo());
+					noticeRepository.save(notice);
 				} else {
 					// 추천한 이력이 있을시 비추
 					PostRecommend existedRecommend = optionalPostRecommend.get();
@@ -260,6 +270,14 @@ public class PostManagementService {
 				// commentCount
 				map.put("commentCount", commentCount);
 				res = new CommonResponseDTO(map, HttpStatus.OK);
+				// notice 추가
+				Notice notice = new Notice();
+				notice.setKind(Common.SOMEONE_COMMENT_POST);
+				notice.setSentUsers(optionalWriter.get());
+				notice.setTargetusers(post.getUsers());
+				notice.setTargetno(post.getNo());
+				noticeRepository.save(notice);
+
 				// 작성자가 존재하지 않을 경우
 			} else if (optionalWriter.isEmpty()) {
 				res = new CommonResponseDTO(HttpStatus.UNAUTHORIZED, "존재하지 않은 작성자");
@@ -276,7 +294,7 @@ public class PostManagementService {
 
 	// PostNo로 작성된 comment 조회
 	@Transactional(readOnly = true)
-	public CommonResponseDTO getComment(Long userNo,Long postNo) {
+	public CommonResponseDTO getComment(Long userNo, Long postNo) {
 		CommonResponseDTO res = null;
 		Map<String, Object> map = new HashMap<>();
 		try {
@@ -287,11 +305,13 @@ public class PostManagementService {
 				List<PostComment> comments = post.getComments();
 
 				Users user = userRepository.getById(userNo);
-				//TODO:포스트 조회시 이미 추천한 포스트인지 아닌지가 안됨 아마 post.getComments에서 가져오면 안될듯함
-				for(PostComment comment : comments) {
-					boolean recommended = commentRecommendRepository.existsByPostCommentAndRecommendUsers(comment.getNo(), userNo);
+				// TODO:포스트 조회시 이미 추천한 포스트인지 아닌지가 안됨 아마 post.getComments에서 가져오면 안될듯함
+				for (PostComment comment : comments) {
+					boolean recommended = commentRecommendRepository
+							.existsByPostCommentAndRecommendUsers(comment.getNo(), userNo);
 					System.out.println(recommended);
-					commentArrayList.add(new Comment(comment.getNo(),comment.getUsers().getNickname(),comment.getUsers().getNo(),comment.getRecommend(),comment.getContent(),recommended));
+					commentArrayList.add(new Comment(comment.getNo(), comment.getUsers().getNickname(),
+							comment.getUsers().getNo(), comment.getRecommend(), comment.getContent(), recommended));
 
 				}
 				map.put("comments", commentArrayList);
@@ -309,42 +329,52 @@ public class PostManagementService {
 		}
 	}
 
-	//comment 추천
+	// comment 추천
 	@Transactional
-	public CommonResponseDTO recommendComment(Long userNo,Long commentNo) {
+	public CommonResponseDTO recommendComment(Long userNo, Long commentNo) {
 		Optional<Users> user = userRepository.findById(userNo);
 		Optional<PostComment> targetComment = postCommentRepository.findById(commentNo);
-		if(user.isPresent() && targetComment.isPresent()) {
-			Optional<CommentRecommend> recommendComment = commentRecommendRepository.findByPostCommentAndRecommendUsers(targetComment.get(),user.get());
-			//유저가 타겟코멘트를 추천했을 경우
-			if(recommendComment.isPresent()) {
-				//연관관게삭제
+		if (user.isPresent() && targetComment.isPresent()) {
+			Optional<CommentRecommend> recommendComment = commentRecommendRepository
+					.findByPostCommentAndRecommendUsers(targetComment.get(), user.get());
+			// 유저가 타겟코멘트를 추천했을 경우
+			if (recommendComment.isPresent()) {
+				// 연관관게삭제
 				commentRecommendRepository.delete(recommendComment.get());
-				//DTO생성
+				// DTO생성
 				Long recommend = targetComment.get().getRecommend();
-				Map<String,Object> map = new HashMap<>();
+				Map<String, Object> map = new HashMap<>();
 				map.put("recommend", false);
 				map.put("recommendCount", recommend);
 				return new CommonResponseDTO(map, HttpStatus.ACCEPTED);
 			}
-			//유저가 타겟코멘트를 추천하지 않았을 경우
-			//연관관계생성
-			if(recommendComment.isEmpty()) {
-				CommentRecommend commentRecommend = new CommentRecommend(targetComment.get(),user.get());
+			// 유저가 타겟코멘트를 추천하지 않았을 경우
+			// 연관관계생성
+			if (recommendComment.isEmpty()) {
+				CommentRecommend commentRecommend = new CommentRecommend(targetComment.get(), user.get());
 				commentRecommendRepository.save(commentRecommend);
-				Map<String,Object> map = new HashMap<>();
+				Map<String, Object> map = new HashMap<>();
 				map.put("recommend", true);
 				Long recommendCount = targetComment.get().getRecommend();
 				map.put("recommendCount", recommendCount);
-				return new CommonResponseDTO(map,HttpStatus.ACCEPTED);
+				// notice 추가
+				Notice notice = new Notice();
+				notice.setKind(Common.SOMEON_LIKE_COMMENT);
+				notice.setSentUsers(user.get());
+				notice.setTargetusers(targetComment.get().getUsers());
+				notice.setTargetno(targetComment.get().getNo());
+				notice.setTargetmasterno(targetComment.get().getPost().getNo());
+				noticeRepository.save(notice);
+
+				return new CommonResponseDTO(map, HttpStatus.ACCEPTED);
 			}
 		}
-		//잘못된 요청 시 리턴
+		// 잘못된 요청 시 리턴
 		return new CommonResponseDTO(HttpStatus.BAD_REQUEST);
 	}
-	
-	//삭제는 아직 테스트 and 구현 안해봤음 테스트 or 구현 이후 CommonResponseDTO로 return value 수정할 예정
-	//Post 삭제
+
+	// 삭제는 아직 테스트 and 구현 안해봤음 테스트 or 구현 이후 CommonResponseDTO로 return value 수정할 예정
+	// Post 삭제
 
 	@Transactional
 	public HttpStatus deletePost(Long postNo, Long userId) {
@@ -407,10 +437,11 @@ public class PostManagementService {
 			List<String> imgs = postImageManager.getImage(post);
 			postDTO.setImg(imgs);
 
-			ArrayList<ChallengeHasPost> chps = challengeHasPostRepository.findByPostNo(post.getNo()); 
-			for(ChallengeHasPost chp : chps) {
-				Optional<Challenge> challenge = challengeRepository.findActiveById(chp.getChallengeHasPostPrimaryKey().getChallengeNo());
-				if(challenge.isPresent()) {
+			ArrayList<ChallengeHasPost> chps = challengeHasPostRepository.findByPostNo(post.getNo());
+			for (ChallengeHasPost chp : chps) {
+				Optional<Challenge> challenge = challengeRepository
+						.findActiveById(chp.getChallengeHasPostPrimaryKey().getChallengeNo());
+				if (challenge.isPresent()) {
 					String title = challenge.get().getTitle();
 					postDTO.addTaggedChallenge(title, chp.getChallengeHasPostPrimaryKey().getChallengeNo());
 				}

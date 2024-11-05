@@ -15,4 +15,10 @@ public class Common {
 
 	public static String SIZE_OF_PAGE = "sizeOfPage";
 
+	public static String SOMEONE_FOLLOW_ME = "follow";
+	public static String SOMEONE_LIKE_POST = "post";
+	public static String SOMEONE_COMMENT_POST = "postComment";
+	public static String SOMEON_LIKE_COMMENT = "comment";
+	public static String OUR_MESSAGE_TO_USER = "notice";
+
 }

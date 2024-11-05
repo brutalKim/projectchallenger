@@ -46,4 +46,8 @@ public class CommonResponseDTO extends ResponseEntity<Map<String, Object>> {
 	public CommonResponseDTO(Map<String, Object> body, HttpStatusCode status) {
 		super(body, status);
 	}
+
+	public CommonResponseDTO(Map<String, Object> body, HttpStatusCode status, Boolean isSuccess) {
+		this(body, status, null, null, isSuccess);
+	}
 }
