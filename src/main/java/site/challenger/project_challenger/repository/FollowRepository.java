@@ -10,11 +10,11 @@ import org.springframework.data.repository.query.Param;
 import site.challenger.project_challenger.domain.Follow;
 
 public interface FollowRepository extends JpaRepository<Follow, Long> {
-    //유저가 팔로우
+    //유저가 팔로우 조회
     @Query("SELECT f FROM Follow f WHERE f.users.no = :userNo")
     ArrayList<Follow> getFollow(@Param("userNo") Long userNo);
     
-    //유저를 팔로우
+    //유저 팔로워 조회
     @Query("SELECT f FROM Follow f WHERE f.followUsers.no = :targetUserNo")
     ArrayList<Follow> getFollower(@Param("targetUserNo") Long targetUserNo);
     

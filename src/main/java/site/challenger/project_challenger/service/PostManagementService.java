@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -22,7 +23,11 @@ import site.challenger.project_challenger.domain.Challenge;
 import site.challenger.project_challenger.domain.ChallengeHasPost;
 import site.challenger.project_challenger.domain.CommentRecommend;
 import site.challenger.project_challenger.domain.Follow;
+
 import site.challenger.project_challenger.domain.Notice;
+
+import site.challenger.project_challenger.domain.LocationRef;
+
 import site.challenger.project_challenger.domain.Post;
 import site.challenger.project_challenger.domain.PostComment;
 import site.challenger.project_challenger.domain.PostImage;
@@ -41,6 +46,7 @@ import site.challenger.project_challenger.repository.PostCommentRepository;
 import site.challenger.project_challenger.repository.PostRecommendRepository;
 import site.challenger.project_challenger.repository.PostRepository;
 import site.challenger.project_challenger.repository.UserRepository;
+import site.challenger.project_challenger.util.InsuUtils;
 import site.challenger.project_challenger.util.PostImageManager;
 
 /*
@@ -119,11 +125,12 @@ public class PostManagementService {
 	@Transactional(readOnly = true)
 	public CommonResponseDTO getRecommendPost(Long userNo, int page) {
 		Pageable pageable = PageRequest.of(page, 10);
-		List<PostDTO> postDTOs = postRepository.getRecommendPost(userNo, pageable).getContent();
-		// 포스트 전처리
-		postDTOs = postPreprocessing(postDTOs);
 		Map<String, Object> map = new HashMap<>();
-		map.put("posts", postDTOs);
+		Page<PostDTO> postDTOs = postRepository.getRecommendPost(userNo, pageable);
+		// 포스트 전처리
+		List<PostDTO> postDTOList = postPreprocessing(postDTOs.getContent());
+		map.put("data", postDTOList );
+		map.put("nextPage",postDTOs.hasNext());
 		return new CommonResponseDTO(map, HttpStatus.OK);
 	}
 
@@ -139,11 +146,18 @@ public class PostManagementService {
 	}
 
 	// 지역 기반 post 조회
-	// TODO:미완
 	@Transactional(readOnly = true)
 	public CommonResponseDTO getPostByRegion(Long userNo, int page) {
-		return null;
-
+		Optional<Users> user = userRepository.findById(userNo);
+		if(user.isPresent()) {
+			LocationRef locationRef = user.get().getLocationRef();
+			Pageable pageable = PageRequest.of(page, 10);
+			List<PostDTO> postDTOs = postRepository.findAllByLocationRef(locationRef, userNo,pageable).getContent();
+			Map map = new HashMap<>();
+			map.put("data", postPreprocessing(postDTOs));
+			return new CommonResponseDTO(map,HttpStatus.OK);
+		}
+		return new CommonResponseDTO(HttpStatus.BAD_REQUEST);
 	}
 
 	// 유저아이디로 Post조회
@@ -157,14 +171,15 @@ public class PostManagementService {
 			if (areAllUsersExists && optionalUser.isPresent()) {
 				Users user = optionalUser.get();
 				Pageable pageable = PageRequest.of(page, 10);
-				List<PostDTO> postsArray = postRepository.getPostByWriterAndUser(writerNo, user.getNo(), pageable)
-						.getContent();
-				ArrayList<PostDTO> postsArrayList = postPreprocessing(postsArray);
-				if (postsArray.size() == 0) {
+				Page<PostDTO> postsPage = postRepository.getPostByWriterAndUser(writerNo, user.getNo(), pageable);
+				ArrayList<PostDTO> postsArrayList = postPreprocessing(postsPage.getContent());
+				
+				if (postsPage.isEmpty()) {
 					res = new CommonResponseDTO(HttpStatus.NOT_FOUND, "작성한 글을 찾을 수 없습니다.");
 				} else {
 					Map<String, Object> map = new HashMap<>();
-					map.put("posts", postsArrayList);
+					map.put("data", postsArrayList);
+					map.put("nextPage", postsPage.hasNext());
 					res = new CommonResponseDTO(map, HttpStatus.OK);
 				}
 			} else {
@@ -184,12 +199,18 @@ public class PostManagementService {
 	@Transactional(readOnly = true)
 	public CommonResponseDTO getByKeyWord(Long userNo, int page, String keyWord) {
 		CommonResponseDTO res = null;
+		Map<String, Object> map = new HashMap<>();
+		if(keyWord.isEmpty()) {
+			map.put("data",new ArrayList<>());
+			map.put("nextPage", false);
+			return new CommonResponseDTO(map,HttpStatus.OK);
+		}
 		try {
 			Pageable pageable = PageRequest.of(page, 10);
-			List<PostDTO> postsArray = postRepository.getPostByKeyword(keyWord, userNo, pageable).getContent();
-			ArrayList<PostDTO> postDTOs = postPreprocessing(postsArray);
-			Map<String, Object> map = new HashMap<>();
-			map.put("posts", postDTOs);
+			Page<PostDTO> postsPage = postRepository.getPostByKeyword(keyWord, userNo, pageable);
+			ArrayList<PostDTO> postDTOs = postPreprocessing(postsPage.getContent());
+			map.put("data", postDTOs);
+			map.put("nextPage", postsPage.hasNext());
 			res = new CommonResponseDTO(map, HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -305,13 +326,12 @@ public class PostManagementService {
 				List<PostComment> comments = post.getComments();
 
 				Users user = userRepository.getById(userNo);
-				// TODO:포스트 조회시 이미 추천한 포스트인지 아닌지가 안됨 아마 post.getComments에서 가져오면 안될듯함
-				for (PostComment comment : comments) {
-					boolean recommended = commentRecommendRepository
-							.existsByPostCommentAndRecommendUsers(comment.getNo(), userNo);
-					System.out.println(recommended);
-					commentArrayList.add(new Comment(comment.getNo(), comment.getUsers().getNickname(),
-							comment.getUsers().getNo(), comment.getRecommend(), comment.getContent(), recommended));
+
+				//TODO:포스트 조회시 이미 추천한 포스트인지 아닌지가 안됨 아마 post.getComments에서 가져오면 안될듯함
+				for(PostComment comment : comments) {
+					boolean recommended = commentRecommendRepository.existsByPostCommentAndRecommendUsers(comment.getNo(), userNo);
+					commentArrayList.add(new Comment(comment.getNo(),comment.getUsers().getNickname(),comment.getUsers().getNo(),comment.getRecommend(),comment.getContent(),recommended));
+
 
 				}
 				map.put("comments", commentArrayList);
@@ -413,9 +433,14 @@ public class PostManagementService {
 		private String Content;
 		private boolean isRecommended;
 	}
-
+	@Getter
+	@Setter
+	@AllArgsConstructor
+	public class page{
+		
+	}
 	// 포스트 DTO 전처리
-	private ArrayList<PostDTO> postPreprocessing(List<PostDTO> prePostData) {
+	public ArrayList<PostDTO> postPreprocessing(List<PostDTO> prePostData) {
 		ArrayList<PostDTO> data = new ArrayList<>();
 		for (PostDTO postDTO : prePostData) {
 			// 덧글수
