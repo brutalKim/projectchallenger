@@ -1,5 +1,6 @@
 package site.challenger.project_challenger.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,20 +20,19 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import site.challenger.project_challenger.constants.Common;
 import site.challenger.project_challenger.domain.Challenge;
 import site.challenger.project_challenger.domain.ChallengeHasPost;
 import site.challenger.project_challenger.domain.CommentRecommend;
 import site.challenger.project_challenger.domain.Follow;
-
-import site.challenger.project_challenger.domain.Notice;
-
 import site.challenger.project_challenger.domain.LocationRef;
-
+import site.challenger.project_challenger.domain.Notice;
 import site.challenger.project_challenger.domain.Post;
 import site.challenger.project_challenger.domain.PostComment;
 import site.challenger.project_challenger.domain.PostImage;
 import site.challenger.project_challenger.domain.PostRecommend;
+import site.challenger.project_challenger.domain.PostRecommendPrimaryKey;
 import site.challenger.project_challenger.domain.Users;
 import site.challenger.project_challenger.dto.CommonResponseDTO;
 import site.challenger.project_challenger.dto.post.PostDTO;
@@ -129,8 +130,8 @@ public class PostManagementService {
 		Page<PostDTO> postDTOs = postRepository.getRecommendPost(userNo, pageable);
 		// 포스트 전처리
 		List<PostDTO> postDTOList = postPreprocessing(postDTOs.getContent());
-		map.put("data", postDTOList );
-		map.put("nextPage",postDTOs.hasNext());
+		map.put("data", postDTOList);
+		map.put("nextPage", postDTOs.hasNext());
 		return new CommonResponseDTO(map, HttpStatus.OK);
 	}
 
@@ -149,13 +150,13 @@ public class PostManagementService {
 	@Transactional(readOnly = true)
 	public CommonResponseDTO getPostByRegion(Long userNo, int page) {
 		Optional<Users> user = userRepository.findById(userNo);
-		if(user.isPresent()) {
+		if (user.isPresent()) {
 			LocationRef locationRef = user.get().getLocationRef();
 			Pageable pageable = PageRequest.of(page, 10);
-			List<PostDTO> postDTOs = postRepository.findAllByLocationRef(locationRef, userNo,pageable).getContent();
+			List<PostDTO> postDTOs = postRepository.findAllByLocationRef(locationRef, userNo, pageable).getContent();
 			Map map = new HashMap<>();
 			map.put("data", postPreprocessing(postDTOs));
-			return new CommonResponseDTO(map,HttpStatus.OK);
+			return new CommonResponseDTO(map, HttpStatus.OK);
 		}
 		return new CommonResponseDTO(HttpStatus.BAD_REQUEST);
 	}
@@ -173,7 +174,7 @@ public class PostManagementService {
 				Pageable pageable = PageRequest.of(page, 10);
 				Page<PostDTO> postsPage = postRepository.getPostByWriterAndUser(writerNo, user.getNo(), pageable);
 				ArrayList<PostDTO> postsArrayList = postPreprocessing(postsPage.getContent());
-				
+
 				if (postsPage.isEmpty()) {
 					res = new CommonResponseDTO(HttpStatus.NOT_FOUND, "작성한 글을 찾을 수 없습니다.");
 				} else {
@@ -200,10 +201,10 @@ public class PostManagementService {
 	public CommonResponseDTO getByKeyWord(Long userNo, int page, String keyWord) {
 		CommonResponseDTO res = null;
 		Map<String, Object> map = new HashMap<>();
-		if(keyWord.isEmpty()) {
-			map.put("data",new ArrayList<>());
+		if (keyWord.isEmpty()) {
+			map.put("data", new ArrayList<>());
 			map.put("nextPage", false);
-			return new CommonResponseDTO(map,HttpStatus.OK);
+			return new CommonResponseDTO(map, HttpStatus.OK);
 		}
 		try {
 			Pageable pageable = PageRequest.of(page, 10);
@@ -218,6 +219,36 @@ public class PostManagementService {
 		} finally {
 			return res;
 		}
+	}
+
+	// insu 1105 getSinglePost
+	public CommonResponseDTO getSinglePost(long requestUserNo, long postNo) {
+
+		Users requestUser = userRepository.findById(requestUserNo).get();
+
+		Post requestPost = postRepository.findById(postNo)
+				.orElseThrow(() -> InsuUtils.throwNewResponseStatusException("찾을 수 없는 포스트"));
+
+		Map<String, Object> body = new HashMap<String, Object>();
+
+		PostDTO post = new PostDTO();
+
+		post.setCommentCount((long) requestPost.getComments().size());
+		post.setContent(requestPost.getContent());
+		post.setDate(requestPost.getDate());
+		post.setImg(requestPost.getPostImage().stream().map(item -> item.getStoredName()).toList());
+		post.setNo(requestPost.getNo());
+		post.setProfileImg(requestPost.getUsers().getProfile().getSavedName());
+		post.setRecommend(requestPost.getRecommend());
+		PostRecommendPrimaryKey postRecommendPrimaryKey = new PostRecommendPrimaryKey(requestUser, requestPost);
+		post.setRecommended(postRecommendRepository.existsById(postRecommendPrimaryKey));
+		post.setTaggedChallenges(post.getTaggedChallenges());
+		post.setUsersNo(requestPost.getUsers().getNo());
+		post.setWriterNickname(requestPost.getUsers().getNickname());
+
+		body.put("post", post);
+
+		return new CommonResponseDTO(body, HttpStatus.OK, true);
 	}
 
 	// Post추천
@@ -244,12 +275,19 @@ public class PostManagementService {
 					map.put("recommendCount", post.getRecommend());
 					res = new CommonResponseDTO(map, HttpStatus.OK);
 					// notice 추가
-					Notice notice = new Notice();
-					notice.setKind(Common.SOMEONE_LIKE_POST);
-					notice.setSentUsers(optionalRecommender.get());
-					notice.setTargetusers(post.getUsers());
-					notice.setTargetno(post.getNo());
-					noticeRepository.save(notice);
+					if (optionalRecommender.get().getNo() != optionalPost.get().getUsers().getNo()) {
+						boolean existsByKindAndTargetusersAndSentusers = noticeRepository
+								.existsByKindAndTargetusersAndSentusers(Common.SOMEONE_LIKE_POST,
+										optionalPost.get().getUsers(), optionalRecommender.get());
+						if (!existsByKindAndTargetusersAndSentusers) {
+							Notice notice = new Notice();
+							notice.setKind(Common.SOMEONE_LIKE_POST);
+							notice.setSentusers(optionalRecommender.get());
+							notice.setTargetusers(post.getUsers());
+							notice.setTargetno(post.getNo());
+							noticeRepository.save(notice);
+						}
+					}
 				} else {
 					// 추천한 이력이 있을시 비추
 					PostRecommend existedRecommend = optionalPostRecommend.get();
@@ -285,19 +323,32 @@ public class PostManagementService {
 				// testing
 				PostComment postComment = new PostComment(user, post, content);
 				post.addComment(postComment);
-				postCommentRepository.save(postComment);
+				PostComment saveComment = postCommentRepository.save(postComment);
 				postRepository.save(post);
 				Long commentCount = (long) postRepository.findById(postNo).get().getComments().size();
 				// commentCount
 				map.put("commentCount", commentCount);
-				res = new CommonResponseDTO(map, HttpStatus.OK);
+				map.put("saveComment",
+						new Comment(saveComment.getNo(), saveComment.getUsers().getNickname(),
+								saveComment.getUsers().getNo(), saveComment.getRecommend(), saveComment.getContent(),
+								false, saveComment.getUsers().getProfile().getSavedName(), saveComment.getDate(),
+								saveComment.getPost().getNo()));
+				res = new CommonResponseDTO(map, HttpStatus.OK, true);
 				// notice 추가
-				Notice notice = new Notice();
-				notice.setKind(Common.SOMEONE_COMMENT_POST);
-				notice.setSentUsers(optionalWriter.get());
-				notice.setTargetusers(post.getUsers());
-				notice.setTargetno(post.getNo());
-				noticeRepository.save(notice);
+				if (user.getNo() != post.getUsers().getNo()) {
+					boolean existsByKindAndTargetusersAndSentusers = noticeRepository
+							.existsByKindAndTargetusersAndSentusers(Common.SOMEONE_COMMENT_POST, post.getUsers(), user);
+					if (!existsByKindAndTargetusersAndSentusers) {
+						Notice notice = new Notice();
+						notice.setKind(Common.SOMEONE_COMMENT_POST);
+						notice.setSentusers(optionalWriter.get());
+						notice.setTargetusers(post.getUsers());
+						notice.setTargetmasterno(postNo);
+						notice.setTargetno(saveComment.getNo());
+						noticeRepository.save(notice);
+
+					}
+				}
 
 				// 작성자가 존재하지 않을 경우
 			} else if (optionalWriter.isEmpty()) {
@@ -327,11 +378,14 @@ public class PostManagementService {
 
 				Users user = userRepository.getById(userNo);
 
-				//TODO:포스트 조회시 이미 추천한 포스트인지 아닌지가 안됨 아마 post.getComments에서 가져오면 안될듯함
-				for(PostComment comment : comments) {
-					boolean recommended = commentRecommendRepository.existsByPostCommentAndRecommendUsers(comment.getNo(), userNo);
-					commentArrayList.add(new Comment(comment.getNo(),comment.getUsers().getNickname(),comment.getUsers().getNo(),comment.getRecommend(),comment.getContent(),recommended));
-
+				// TODO:포스트 조회시 이미 추천한 포스트인지 아닌지가 안됨 아마 post.getComments에서 가져오면 안될듯함
+				for (PostComment comment : comments) {
+					boolean recommended = commentRecommendRepository
+							.existsByPostCommentAndRecommendUsers(comment.getNo(), userNo);
+					commentArrayList.add(new Comment(comment.getNo(), comment.getUsers().getNickname(),
+							comment.getUsers().getNo(), comment.getRecommend(), comment.getContent(), recommended,
+							comment.getUsers().getProfile().getSavedName(), comment.getDate(),
+							comment.getPost().getNo()));
 
 				}
 				map.put("comments", commentArrayList);
@@ -347,6 +401,56 @@ public class PostManagementService {
 		} finally {
 			return res;
 		}
+	}
+
+	// PostNo로 작성된 comment 조회 하이라이트 기능, 정렬, 페이징 1105 insu
+	@Transactional(readOnly = true)
+	public CommonResponseDTO getComment(Long userNo, Long postNo, Long highLightNo, String sort, Long page) {
+		CommonResponseDTO res = null;
+		Map<String, Object> map = new HashMap<>();
+		Pageable pageable;
+		if (sort.equals("new")) {
+			pageable = PageRequest.of(page.intValue(), 10, Sort.by("date").descending());
+		} else if (sort.equals("like")) {
+			pageable = PageRequest.of(page.intValue(), 10, Sort.by("recommend").descending());
+		} else if (sort.equals("old")) {
+			pageable = PageRequest.of(page.intValue(), 10, Sort.by("date").ascending());
+		} else {
+			throw InsuUtils.throwNewResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 파라미터");
+		}
+
+		// highlight 댓글
+		if (highLightNo != null) {
+			boolean existsByNoAndPostNo = postCommentRepository.existsByNoAndPostNo(highLightNo, postNo);
+			if (existsByNoAndPostNo) {
+				PostComment highLightComment = postCommentRepository.findById(highLightNo)
+						.orElseThrow(() -> InsuUtils.throwNewResponseStatusException("해당 댓글은 존재하지 않음"));
+				boolean highLightCommentrecommended = commentRecommendRepository
+						.existsByPostCommentAndRecommendUsers(highLightComment.getNo(), userNo);
+				Comment highLightCommentdto = new Comment(highLightComment.getNo(),
+						highLightComment.getUsers().getNickname(), highLightComment.getUsers().getNo(),
+						highLightComment.getRecommend(), highLightComment.getContent(), highLightCommentrecommended,
+						highLightComment.getUsers().getProfile().getSavedName(), highLightComment.getDate(),
+						highLightComment.getPost().getNo());
+				map.put("highLightComment", highLightCommentdto);
+			}
+		}
+
+		Page<PostComment> byPostNo = postCommentRepository.findByPostNo(postNo, pageable);
+		InsuUtils.insertMapWithPageInfo(map, byPostNo);
+		List<PostComment> postCommentList = byPostNo.getContent();
+		List<Comment> commentArrayList = new ArrayList<>();
+		for (PostComment comment : postCommentList) {
+			boolean recommended = commentRecommendRepository.existsByPostCommentAndRecommendUsers(comment.getNo(),
+					userNo);
+			commentArrayList.add(new Comment(comment.getNo(), comment.getUsers().getNickname(),
+					comment.getUsers().getNo(), comment.getRecommend(), comment.getContent(), recommended,
+					comment.getUsers().getProfile().getSavedName(), comment.getDate(), comment.getPost().getNo()));
+		}
+		map.put("comments", commentArrayList);
+		res = new CommonResponseDTO(map, HttpStatus.OK, postNo + "번 comment 조회", null, true);
+
+		return res;
 	}
 
 	// comment 추천
@@ -378,13 +482,20 @@ public class PostManagementService {
 				Long recommendCount = targetComment.get().getRecommend();
 				map.put("recommendCount", recommendCount);
 				// notice 추가
-				Notice notice = new Notice();
-				notice.setKind(Common.SOMEON_LIKE_COMMENT);
-				notice.setSentUsers(user.get());
-				notice.setTargetusers(targetComment.get().getUsers());
-				notice.setTargetno(targetComment.get().getNo());
-				notice.setTargetmasterno(targetComment.get().getPost().getNo());
-				noticeRepository.save(notice);
+				if (user.get().getNo() != targetComment.get().getUsers().getNo()) {
+					boolean existsByKindAndTargetusersAndSentusers = noticeRepository
+							.existsByKindAndTargetusersAndSentusers(Common.SOMEON_LIKE_COMMENT,
+									targetComment.get().getUsers(), user.get());
+					if (!existsByKindAndTargetusersAndSentusers) {
+						Notice notice = new Notice();
+						notice.setKind(Common.SOMEON_LIKE_COMMENT);
+						notice.setSentusers(user.get());
+						notice.setTargetusers(targetComment.get().getUsers());
+						notice.setTargetno(targetComment.get().getNo());
+						notice.setTargetmasterno(targetComment.get().getPost().getNo());
+						noticeRepository.save(notice);
+					}
+				}
 
 				return new CommonResponseDTO(map, HttpStatus.ACCEPTED);
 			}
@@ -410,21 +521,28 @@ public class PostManagementService {
 
 	// comment삭제
 	@Transactional
-	public HttpStatus deleteComment(Long commentNo, Long userId) {
-		PostComment comment = postCommentRepository.findById(commentNo)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment를 찾을 수 없습니다."));
-		if (comment.getUsers().getNo() == userId) {
-			postCommentRepository.delete(comment);
-		} else {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Comment를 삭제할 권한이 없습니다.");
+	public CommonResponseDTO deleteComment(Long commentNo, Long requestUserNo) {
+		PostComment comment = getCommentByCommentNo(commentNo);
+		if (comment.getUsers().getNo() != requestUserNo) {
+			throw InsuUtils.throwNewResponseStatusException(HttpStatus.FORBIDDEN, "자신의 댓글만 삭제할 수 있습니다.");
 		}
-		return HttpStatus.OK;
+
+		postCommentRepository.delete(comment);
+
+		return new CommonResponseDTO(HttpStatus.OK, true);
+	}
+
+	private PostComment getCommentByCommentNo(long commentNo) {
+		return postCommentRepository.findById(commentNo)
+				.orElseThrow(() -> InsuUtils.throwNewResponseStatusException("존재하지 않는 Comment"));
+
 	}
 
 	// 코맨트 inner Class 전체적 코드를 유지하기 위해
 	@Getter
 	@Setter
 	@AllArgsConstructor
+	@ToString
 	public class Comment {
 		private Long CommentNo;
 		private String nickname;
@@ -432,13 +550,18 @@ public class PostManagementService {
 		private Long recommend;
 		private String Content;
 		private boolean isRecommended;
+		private String profileImage;
+		private LocalDateTime date;
+		private Long postNo;
 	}
+
 	@Getter
 	@Setter
 	@AllArgsConstructor
-	public class page{
-		
+	public class page {
+
 	}
+
 	// 포스트 DTO 전처리
 	public ArrayList<PostDTO> postPreprocessing(List<PostDTO> prePostData) {
 		ArrayList<PostDTO> data = new ArrayList<>();
@@ -450,11 +573,11 @@ public class PostManagementService {
 			Users writer = userRepository.findById(postDTO.getUsersNo()).get();
 			String writerNickname = writer.getNickname();
 			String profileImg = writer.getProfile().getSavedName();
-			if (profileImg == null) {
-				profileImg = "defaultImg";
-			} else {
-				profileImg = "/userProfileImg/" + profileImg;
-			}
+//			if (profileImg == null) {
+//				profileImg = "defaultImg";
+//			} else {
+//				profileImg = "/userProfileImg/" + profileImg;
+//			} 1107 insu
 			postDTO.setProfileImg(profileImg);
 			postDTO.setWriterNickname(writerNickname);
 			// 이미지

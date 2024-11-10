@@ -108,8 +108,8 @@ public class NoticeService {
 	}
 
 	private NoticeDTO getNoticeDTOFromNotice(Notice notice) {
-		NoticeDTO noticeDTO = new NoticeDTO(notice.getNo(), notice.getSentUsers().getNo(),
-				notice.getSentUsers().getNickname(), notice.getTargetusers().getNo(), notice.getKind(),
+		NoticeDTO noticeDTO = new NoticeDTO(notice.getNo(), notice.getSentusers().getNo(),
+				notice.getSentusers().getNickname(), notice.getTargetusers().getNo(), notice.getKind(),
 				notice.getTargetno(), notice.getTargetmasterno(), notice.getDate(), notice.isReaded());
 		return noticeDTO;
 	}

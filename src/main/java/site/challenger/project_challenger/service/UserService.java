@@ -8,6 +8,9 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,9 +37,6 @@ import site.challenger.project_challenger.repository.UserRepository;
 import site.challenger.project_challenger.util.FileSaver;
 import site.challenger.project_challenger.util.InsuUtils;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -134,7 +134,7 @@ public class UserService {
 
 	// 유저 팔로우
 	public CommonResponseDTO followUser(Long userNo, Long targetUserNo) {
-		System.out.println(userNo + "@@@@@"+targetUserNo);
+		System.out.println(userNo + "@@@@@" + targetUserNo);
 		boolean isExistFollow = followRepository.existsByUserNoAndTargetUserNo(userNo, targetUserNo);
 		Map map = new HashMap<>();
 		if (isExistFollow) {
@@ -156,17 +156,22 @@ public class UserService {
 		map.put("type", "follow");
 
 		// notice 추가
-		Notice notice = new Notice();
-		notice.setKind(Common.SOMEONE_FOLLOW_ME);
-		notice.setSentUsers(user);
-		notice.setTargetusers(targetUser);
-		notice.setTargetno(userNo);
-		noticeRepository.save(notice);
+		boolean existsByKindAndTargetusersAndSentusers = noticeRepository
+				.existsByKindAndTargetusersAndSentusers(Common.SOMEONE_FOLLOW_ME, targetUser, user);
+		if (!existsByKindAndTargetusersAndSentusers) {
+			Notice notice = new Notice();
+			notice.setKind(Common.SOMEONE_FOLLOW_ME);
+			notice.setSentusers(user);
+			notice.setTargetusers(targetUser);
+			notice.setTargetno(userNo);
+			noticeRepository.save(notice);
+		}
 
 		return new CommonResponseDTO(map, HttpStatus.ACCEPTED);
 
 	}
-	//유저 상세정보 수정
+
+	// 유저 상세정보 수정
 	public CommonResponseDTO changeUserDetail(long requestUserNo, UserRequestDTO userRequestDTO) {
 		Users requestUser = userRepository.findById(requestUserNo)
 				.orElseThrow(() -> InsuUtils.throwNewResponseStatusException("존재하지 않는 유저"));
@@ -207,15 +212,15 @@ public class UserService {
 	}
 
 	// 닉네임을 키워드로하는 유저 조회
-	public CommonResponseDTO getUserBykeyWord(Long userNo, String keyWord,int page) {
+	public CommonResponseDTO getUserBykeyWord(Long userNo, String keyWord, int page) {
 		Map<String, Object> body = new HashMap<String, Object>();
-		if(keyWord.isEmpty()) {
+		if (keyWord.isEmpty()) {
 			body.put("data", new ArrayList<>());
 			body.put("nextPage", false);
-			return new CommonResponseDTO(body,HttpStatus.OK);
+			return new CommonResponseDTO(body, HttpStatus.OK);
 		}
 		Pageable pageable = PageRequest.of(page, 10);
-		Page<SearchUsersDTO> userDTOs = userRepository.searchUserByKeyWord(userNo, keyWord , pageable);
+		Page<SearchUsersDTO> userDTOs = userRepository.searchUserByKeyWord(userNo, keyWord, pageable);
 		body.put("data", userDTOs.getContent());
 		body.put("nextPage", userDTOs.hasNext());
 		return new CommonResponseDTO(body, HttpStatus.OK);
@@ -229,6 +234,7 @@ public class UserService {
 		}
 		return userList;
 	}
+
 	// 팔로워 전처리
 	private ArrayList<FollowDTO> preprocessingFollower(ArrayList<Follow> follows) {
 		ArrayList<FollowDTO> userList = new ArrayList<>();

@@ -22,5 +22,5 @@ public interface NoticeRepository extends JpaRepository<Notice, Long> {
 	@Query("SELECT n FROM Notice n WHERE n.targetusers = :targetUser")
 	List<Notice> getNotice(@Param("targetUser") Users targetUser);
 
-//	boolean existByKindAndTargetusersAndSentusers()
+	boolean existsByKindAndTargetusersAndSentusers(String kind, Users targetusers, Users sentusers);
 }
