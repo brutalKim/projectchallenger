@@ -32,7 +32,7 @@ public class Notice {
 
 	@ManyToOne
 	@JoinColumn(name = "sent_users", nullable = false)
-	private Users sentUsers;
+	private Users sentusers;
 
 	@ManyToOne
 	@JoinColumn(name = "target_users", nullable = false)

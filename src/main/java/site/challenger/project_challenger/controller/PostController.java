@@ -22,6 +22,7 @@ import site.challenger.project_challenger.dto.post.PostRecommendServiceReqDTO;
 import site.challenger.project_challenger.dto.post.PostWriteServiceReqDTO;
 import site.challenger.project_challenger.service.PostManagementService;
 import site.challenger.project_challenger.service.UserService;
+import site.challenger.project_challenger.util.InsuUtils;
 
 @RestController
 @RequiredArgsConstructor
@@ -69,6 +70,13 @@ public class PostController {
 
 	}
 
+	@GetMapping("/single")
+	public CommonResponseDTO getSinglePost(Authentication authentication, @RequestParam(required = true) Long postNo) {
+		long requestUserNo = InsuUtils.getRequestUserNo(authentication);
+
+		return postManagementService.getSinglePost(requestUserNo, postNo);
+	}
+
 	// 포스트 좋아요
 	@GetMapping("/recommend")
 	public CommonResponseDTO recommend(Authentication authentication, @RequestParam Long postNo) {
@@ -86,7 +94,8 @@ public class PostController {
 
 	// TODO:포스트 코멘트 추천
 	@GetMapping("/comment/recommend")
-	public CommonResponseDTO recommendComment(Authentication authentication,@RequestParam(required = true) Long commentNo) {
+	public CommonResponseDTO recommendComment(Authentication authentication,
+			@RequestParam(required = true) Long commentNo) {
 		Long userId = Long.parseLong(authentication.getName());
 		return postManagementService.recommendComment(userId, commentNo);
 
@@ -94,18 +103,24 @@ public class PostController {
 
 	// 포스트 코멘트 조회
 	@GetMapping("/comment")
-	public CommonResponseDTO Comment(Authentication authentication,@RequestParam Long postNo){
+	public CommonResponseDTO Comment(Authentication authentication, @RequestParam Long postNo,
+			@RequestParam(required = false) Long highLightNo,
+			@RequestParam(required = false, defaultValue = "new") String sort,
+			@RequestParam(required = false, defaultValue = "0") Long page) {
+		// sort = "new" or "like" or "old"
 		Long userNo = Long.parseLong(authentication.getName());
-		return postManagementService.getComment(userNo,postNo);
+
+		return postManagementService.getComment(userNo, postNo, highLightNo, sort, page);
+//		return postManagementService.getComment(userNo, postNo);
 	}
 
 	// 삭제는 추후 수정
 	// 포스트 코멘트 삭제
 	@DeleteMapping("/comment")
-	public ResponseEntity<String> deleteComment(@RequestParam Long commentNo, Authentication authentication) {
-		Long writerNo = Long.parseLong(authentication.getName());
-		HttpStatus res = postManagementService.deleteComment(commentNo, writerNo);
-		return new ResponseEntity<String>("Comment삭제 완료", res);
+	public CommonResponseDTO deleteComment(@RequestParam Long commentNo, Authentication authentication) {
+		long requestUserNo = InsuUtils.getRequestUserNo(authentication);
+
+		return postManagementService.deleteComment(commentNo, requestUserNo);
 	}
 
 	// 삭제는 추후 수정
