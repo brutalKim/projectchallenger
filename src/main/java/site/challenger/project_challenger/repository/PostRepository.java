@@ -46,4 +46,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 		   + "FROM Post p LEFT OUTER JOIN PostRecommend pr ON p.no = pr.post.no AND pr.user.no = :userNo "+
 		   "WHERE p.users.locationRef =:locationRef")
    Page<PostDTO> findAllByLocationRef(@Param("locationRef")LocationRef locationRef,@Param("userNo")Long userNo, Pageable pageable);
+   
+   @Query("SELECT new site.challenger.project_challenger.dto.post.PostDTO(p.no, p.content, p.date, p.recommend, p.users.no, pr.user.no) "
+		   + "FROM Post p LEFT OUTER JOIN PostRecommend pr ON p.no = pr.post.no AND pr.user.no = :userNo "+
+		   "WHERE p.no = :postNo")
+   PostDTO getPostDTO(@Param("postNo")Long postNo, @Param("userNo")Long userNo);
 }

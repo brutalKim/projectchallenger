@@ -11,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,16 +29,17 @@ public class ChallengeLog {
     @ManyToOne
     @JoinColumn(name = "challenge_sub_no", nullable = false)
     private ChallengeSub challengeSub;
-
-    @Column(name= "comment")
-    private String comment;
+    
+    @OneToOne
+    @JoinColumn(name = "post", nullable = true)
+    private Post post;
     
     @CreationTimestamp
     @Column(nullable = false)
     private LocalDate date;
     
-    public ChallengeLog(ChallengeSub challengeSub,String comment) {
+    public ChallengeLog(ChallengeSub challengeSub,Post post) {
     	this.challengeSub = challengeSub;
-    	this.comment = comment;
+    	this.post = post;
     }
 }
