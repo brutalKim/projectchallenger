@@ -105,12 +105,15 @@ public class PostManagementService {
 							// 저장
 							challengeRepository.save(challenge);
 							savedPost.getChallengeHasPost().add(CHP);
-							postRepository.save(savedPost);
 						}
 					}
+					postRepository.save(savedPost);
 				}
+				PostDTO postDTO = postRepository.getPostDTO(savedPost.getNo(),writerId);
+				Map map = new HashMap<>();
+				map.put("post", postDTO);
 				// TODO : 이후 조회하고있는 포스트에 맞게 응답할것
-				res = new CommonResponseDTO(HttpStatus.CREATED);
+				res = new CommonResponseDTO(map,HttpStatus.CREATED);
 			} else {
 				res = new CommonResponseDTO(HttpStatus.NOT_FOUND, "존재하지 않는 작성자");
 			}
@@ -554,14 +557,6 @@ public class PostManagementService {
 		private LocalDateTime date;
 		private Long postNo;
 	}
-
-	@Getter
-	@Setter
-	@AllArgsConstructor
-	public class page {
-
-	}
-
 	// 포스트 DTO 전처리
 	public ArrayList<PostDTO> postPreprocessing(List<PostDTO> prePostData) {
 		ArrayList<PostDTO> data = new ArrayList<>();
