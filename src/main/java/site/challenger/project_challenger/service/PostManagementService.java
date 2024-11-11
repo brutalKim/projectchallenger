@@ -109,7 +109,9 @@ public class PostManagementService {
 					}
 					postRepository.save(savedPost);
 				}
-				PostDTO postDTO = postRepository.getPostDTO(savedPost.getNo(),writerId);
+				List list = new ArrayList<>();
+				list.add(postRepository.getPostDTO(savedPost.getNo(), writerId));
+				ArrayList postDTO = postPreprocessing(list);
 				Map map = new HashMap<>();
 				map.put("post", postDTO);
 				// TODO : 이후 조회하고있는 포스트에 맞게 응답할것

@@ -49,6 +49,7 @@ public class PostImageManager {
 	public List<String> getImage(Post post){
 		List<String> imgUrl = new ArrayList<>();
 		List<PostImage> postImages = post.getPostImage();
+		if(postImages != null)
 		for(PostImage image : postImages) {
 			String imageUrl = servletContext.getContextPath() + image.getFilePath();
 			imgUrl.add(imageUrl);
