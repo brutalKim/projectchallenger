@@ -157,7 +157,8 @@ public class UserService {
 
 		// notice 추가
 		boolean existsByKindAndTargetusersAndSentusers = noticeRepository
-				.existsByKindAndTargetusersAndSentusers(Common.SOMEONE_FOLLOW_ME, targetUser, user);
+				.existsByKindAndTargetusersAndSentusersAndTargetno(Common.SOMEONE_FOLLOW_ME, targetUser, user,
+						targetUserNo);
 		if (!existsByKindAndTargetusersAndSentusers) {
 			Notice notice = new Notice();
 			notice.setKind(Common.SOMEONE_FOLLOW_ME);

@@ -282,8 +282,8 @@ public class PostManagementService {
 					// notice 추가
 					if (optionalRecommender.get().getNo() != optionalPost.get().getUsers().getNo()) {
 						boolean existsByKindAndTargetusersAndSentusers = noticeRepository
-								.existsByKindAndTargetusersAndSentusers(Common.SOMEONE_LIKE_POST,
-										optionalPost.get().getUsers(), optionalRecommender.get());
+								.existsByKindAndTargetusersAndSentusersAndTargetno(Common.SOMEONE_LIKE_POST,
+										optionalPost.get().getUsers(), optionalRecommender.get(), postNo);
 						if (!existsByKindAndTargetusersAndSentusers) {
 							Notice notice = new Notice();
 							notice.setKind(Common.SOMEONE_LIKE_POST);
@@ -342,7 +342,8 @@ public class PostManagementService {
 				// notice 추가
 				if (user.getNo() != post.getUsers().getNo()) {
 					boolean existsByKindAndTargetusersAndSentusers = noticeRepository
-							.existsByKindAndTargetusersAndSentusers(Common.SOMEONE_COMMENT_POST, post.getUsers(), user);
+							.existsByKindAndTargetusersAndSentusersAndTargetno(Common.SOMEONE_COMMENT_POST,
+									post.getUsers(), user, saveComment.getNo());
 					if (!existsByKindAndTargetusersAndSentusers) {
 						Notice notice = new Notice();
 						notice.setKind(Common.SOMEONE_COMMENT_POST);
@@ -489,8 +490,8 @@ public class PostManagementService {
 				// notice 추가
 				if (user.get().getNo() != targetComment.get().getUsers().getNo()) {
 					boolean existsByKindAndTargetusersAndSentusers = noticeRepository
-							.existsByKindAndTargetusersAndSentusers(Common.SOMEON_LIKE_COMMENT,
-									targetComment.get().getUsers(), user.get());
+							.existsByKindAndTargetusersAndSentusersAndTargetno(Common.SOMEON_LIKE_COMMENT,
+									targetComment.get().getUsers(), user.get(), targetComment.get().getNo());
 					if (!existsByKindAndTargetusersAndSentusers) {
 						Notice notice = new Notice();
 						notice.setKind(Common.SOMEON_LIKE_COMMENT);
