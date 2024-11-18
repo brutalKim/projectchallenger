@@ -3,8 +3,6 @@ package site.challenger.project_challenger.controller;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -126,10 +124,10 @@ public class PostController {
 	// 삭제는 추후 수정
 	// 포스트 삭제
 	@DeleteMapping("")
-	public ResponseEntity<String> deletePost(@RequestParam Long PostNo, Authentication authentication) {
-		Long userId = Long.parseLong(authentication.getName());
-		HttpStatus res = postManagementService.deletePost(PostNo, userId);
-		return new ResponseEntity<String>("삭제 완료", res);
+	public CommonResponseDTO deletePost(@RequestParam Long postNo, Authentication authentication) {
+		long requestUserNo = InsuUtils.getRequestUserNo(authentication);
+		CommonResponseDTO deletePost = postManagementService.deletePost(postNo, requestUserNo);
+		return deletePost;
 	}
 
 }
