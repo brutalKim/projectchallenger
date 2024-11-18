@@ -14,13 +14,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 import site.challenger.project_challenger.constants.Common;
 import site.challenger.project_challenger.domain.Challenge;
 import site.challenger.project_challenger.domain.ChallengeHasPost;
@@ -115,7 +113,7 @@ public class PostManagementService {
 				Map map = new HashMap<>();
 				map.put("post", postDTO);
 				// TODO : 이후 조회하고있는 포스트에 맞게 응답할것
-				res = new CommonResponseDTO(map,HttpStatus.CREATED);
+				res = new CommonResponseDTO(map, HttpStatus.CREATED);
 			} else {
 				res = new CommonResponseDTO(HttpStatus.NOT_FOUND, "존재하지 않는 작성자");
 			}
@@ -157,10 +155,12 @@ public class PostManagementService {
 		Optional<Users> user = userRepository.findById(userNo);
 		if (user.isPresent()) {
 			LocationRef locationRef = user.get().getLocationRef();
-			Pageable pageable = PageRequest.of(page, 10);
-			List<PostDTO> postDTOs = postRepository.findAllByLocationRef(locationRef, userNo, pageable).getContent();
-			Map map = new HashMap<>();
-			map.put("data", postPreprocessing(postDTOs));
+			Pageable pageable = PageRequest.of(page, 10, Sort.by("date").descending());
+			Page<PostDTO> postDTOs = postRepository.findAllByLocationRef(locationRef, userNo, pageable);
+			List<PostDTO> postDTOList = postDTOs.getContent();
+			Map<String, Object> map = new HashMap<>();
+			map.put("nextPage", postDTOs.hasNext());
+			map.put("data", postPreprocessing(postDTOList));
 			return new CommonResponseDTO(map, HttpStatus.OK);
 		}
 		return new CommonResponseDTO(HttpStatus.BAD_REQUEST);
@@ -513,15 +513,15 @@ public class PostManagementService {
 	// Post 삭제
 
 	@Transactional
-	public HttpStatus deletePost(Long postNo, Long userId) {
-		Post post = postRepository.findById(postNo)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "계시글을 찾을 수 없습니다."));
-		if (post.getUsers().getNo() == userId) {
-			postRepository.delete(post);
-		} else {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "게시글을 삭제할 권한이 없습니다.");
+	public CommonResponseDTO deletePost(Long postNo, Long requestUserNo) {
+
+		Post targetPost = getPostByPostNo(postNo);
+
+		if (targetPost.getUsers().getNo() == requestUserNo) {
+			postRepository.delete(targetPost);
+			return new CommonResponseDTO(HttpStatus.OK, true);
 		}
-		return HttpStatus.OK;
+		return new CommonResponseDTO(HttpStatus.FORBIDDEN, false);
 	}
 
 	// comment삭제
@@ -537,6 +537,12 @@ public class PostManagementService {
 		return new CommonResponseDTO(HttpStatus.OK, true);
 	}
 
+	private Post getPostByPostNo(long postNo) {
+
+		return postRepository.findById(postNo)
+				.orElseThrow(() -> InsuUtils.throwNewResponseStatusException("찾을 수 없는 포스트"));
+	}
+
 	private PostComment getCommentByCommentNo(long commentNo) {
 		return postCommentRepository.findById(commentNo)
 				.orElseThrow(() -> InsuUtils.throwNewResponseStatusException("존재하지 않는 Comment"));
@@ -547,7 +553,6 @@ public class PostManagementService {
 	@Getter
 	@Setter
 	@AllArgsConstructor
-	@ToString
 	public class Comment {
 		private Long CommentNo;
 		private String nickname;
@@ -559,6 +564,7 @@ public class PostManagementService {
 		private LocalDateTime date;
 		private Long postNo;
 	}
+
 	// 포스트 DTO 전처리
 	public ArrayList<PostDTO> postPreprocessing(List<PostDTO> prePostData) {
 		ArrayList<PostDTO> data = new ArrayList<>();
