@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.Column;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,6 +14,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class PostDTO {
 	private Long no;
+	@Column(length = 1000)
 	private String content;
 	private LocalDateTime date;
 	private Long recommend;

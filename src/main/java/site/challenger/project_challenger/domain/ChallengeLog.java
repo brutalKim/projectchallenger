@@ -40,6 +40,6 @@ public class ChallengeLog {
     
     public ChallengeLog(ChallengeSub challengeSub,Post post) {
     	this.challengeSub = challengeSub;
-    	this.post = post;
+    	if(post != null)this.post = post;
     }
 }

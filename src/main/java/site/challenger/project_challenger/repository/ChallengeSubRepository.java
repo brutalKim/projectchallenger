@@ -1,5 +1,6 @@
 package site.challenger.project_challenger.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -31,5 +32,9 @@ public interface ChallengeSubRepository extends JpaRepository<ChallengeSub, Long
 
 	@Query("SELECT COUNT(cs) FROM ChallengeSub cs WHERE cs.challenge = :challenge AND cs.challenge.abled = true")
 	long countByChallenge(@Param("challenge") Challenge challenge);
-
+	
+	List<ChallengeSub> findByUsers(Users user);
+	
+	@Query("SELECT sub FROM ChallengeSub sub WHERE sub.challenge = :challenge ORDER BY sub.point DESC")
+	Page<ChallengeSub> getChallengeSubByPointOrderByPoint(@Param("challenge") Challenge challenge, Pageable pageable);
 }
