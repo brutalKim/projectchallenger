@@ -1,6 +1,7 @@
 package site.challenger.project_challenger.dto.login;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,5 +18,6 @@ public class AfterLoginInfoDTO {
 	private String userProfileImage;
 	private String userNickName;
 	private LocationRef userLocationRef;
+	private List<UserAuthDto> userAuth;
 
 }

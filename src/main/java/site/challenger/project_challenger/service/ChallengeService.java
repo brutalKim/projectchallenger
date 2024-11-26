@@ -26,6 +26,8 @@ import site.challenger.project_challenger.domain.LocationRef;
 import site.challenger.project_challenger.domain.Post;
 import site.challenger.project_challenger.domain.PostRecommendPrimaryKey;
 import site.challenger.project_challenger.domain.Users;
+import site.challenger.project_challenger.domain.UsersAuthority;
+import site.challenger.project_challenger.domain.UsersAuthorityRef;
 import site.challenger.project_challenger.dto.CommonResponseDTO;
 import site.challenger.project_challenger.dto.challenge.ChallengeRequestDTO;
 import site.challenger.project_challenger.dto.challenge.ChallengeResponseDTO;
@@ -39,6 +41,8 @@ import site.challenger.project_challenger.repository.PostCommentRepository;
 import site.challenger.project_challenger.repository.PostRecommendRepository;
 import site.challenger.project_challenger.repository.PostRepository;
 import site.challenger.project_challenger.repository.UserRepository;
+import site.challenger.project_challenger.repository.UsersAuthorityRefRepository;
+import site.challenger.project_challenger.repository.UsersAuthorityRepository;
 import site.challenger.project_challenger.util.InsuUtils;
 
 @Service
@@ -54,6 +58,9 @@ public class ChallengeService {
 	private final PostCommentRepository postCommentRepository;
 	private final PostRecommendRepository postRecommendRepository;
 
+	private final UsersAuthorityRepository usersAuthorityRepository;
+	private final UsersAuthorityRefRepository usersAuthorityRefRepository;
+
 	@Transactional
 	public CommonResponseDTO addNewChallenge(long requestUserNo, ChallengeRequestDTO challengeRequestDTO) {
 		// challenge 저장,
@@ -61,6 +68,12 @@ public class ChallengeService {
 				challengeRequestDTO.getLocationOpt2());
 
 		Users user = getUserByUserNo(requestUserNo);
+
+//		// WRITE 권한 검증 insu 1124
+//		boolean someoneHasWriteAuth = isSomeoneHasAuth(user,MyRole.WRITE);
+//		if (!someoneHasWriteAuth) {
+//			throw InsuUtils.throwNewResponseStatusException(HttpStatus.FORBIDDEN, "챌린지 생성 권한이 없음");
+//		}
 
 		Challenge challenge = new Challenge();
 		challenge.setUsers(user);
@@ -199,6 +212,7 @@ public class ChallengeService {
 		List<ChallengeResponseDTO> responseList = new ArrayList<ChallengeResponseDTO>();
 
 		ChallengeResponseDTO challengeResponseDTO = getDtofillWithChallenge(challenge, requestUser);
+		challengeResponseDTO.setUserno(challenge.getUsers().getNo().toString());
 
 		responseList.add(challengeResponseDTO);
 		body.put("responseList", responseList);
@@ -504,6 +518,37 @@ public class ChallengeService {
 		responseDTO.setFollower(getFollwerByCh(challenge));
 
 		return responseDTO;
+	}
+
+	private boolean isSomeoneHasAuth(Users user, String auth) {
+		UsersAuthorityRef reportAuthRef = getAuthorityRefByAuthority(auth);
+		UsersAuthority authorityByUserAndAuthorityRef = getAuthorityByUserAndAuthorityRef(user, reportAuthRef);
+		if (authorityByUserAndAuthorityRef.getDate() == null) {
+			// 권한 문제없음
+			return true;
+		} else {
+			// 권한 문제있음
+			boolean overBanned = InsuUtils.isOverBanned(authorityByUserAndAuthorityRef.getDate());
+			if (overBanned) {
+				authorityByUserAndAuthorityRef.setComment(null);
+				authorityByUserAndAuthorityRef.setDate(null);
+				usersAuthorityRepository.save(authorityByUserAndAuthorityRef);
+				return true;
+			}
+
+			return false;
+		}
+
+	}
+
+	private UsersAuthorityRef getAuthorityRefByAuthority(String authority) {
+		return usersAuthorityRefRepository.findByAuthority(authority)
+				.orElseThrow(() -> InsuUtils.throwNewResponseStatusException("존재하지 않는 권한"));
+	}
+
+	private UsersAuthority getAuthorityByUserAndAuthorityRef(Users user, UsersAuthorityRef usersAuthorityRef) {
+		return usersAuthorityRepository.findByUserAndUsersAuthorityRef(user, usersAuthorityRef).orElseThrow(
+				() -> InsuUtils.throwNewResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "사용자가 권한을 부여받지 못했음"));
 	}
 
 }

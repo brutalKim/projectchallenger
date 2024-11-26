@@ -12,9 +12,9 @@ public class ProjectChallengerApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(ProjectChallengerApplication.class, args);
 	}
+
 	@Bean
-	public HiddenHttpMethodFilter hiddenHttpMethodFilter(){
+	public HiddenHttpMethodFilter hiddenHttpMethodFilter() {
 		return new HiddenHttpMethodFilter();
 	}
 }
- 

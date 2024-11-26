@@ -8,10 +8,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import lombok.RequiredArgsConstructor;
+import site.challenger.project_challenger.constants.MyRole;
 import site.challenger.project_challenger.domain.LocationRef;
 import site.challenger.project_challenger.domain.OauthRef;
 import site.challenger.project_challenger.domain.UserRoleRef;
 import site.challenger.project_challenger.domain.Users;
+import site.challenger.project_challenger.domain.UsersAuthority;
+import site.challenger.project_challenger.domain.UsersAuthorityRef;
 import site.challenger.project_challenger.domain.UsersRole;
 import site.challenger.project_challenger.dto.CommonResponseDTO;
 import site.challenger.project_challenger.dto.authentication.SignupServiceReqDTO;
@@ -62,10 +65,28 @@ public class UserManegementService {
 				if (OptionalOuathRef.isPresent()) {
 					OauthRef oauthRef = OptionalOuathRef.get();
 					Users user = new Users(uid, nickname, null, oauthRef, locationRef, true);
-					userRepository.save(user);
+					Users savedUser = userRepository.save(user);
 					Optional<UserRoleRef> optionalUserRoleRef = usersRoleRefRepository.findByRole("ROLE_USER");
 					UserRoleRef userRoleRef = optionalUserRoleRef.get();
 					usersRoleRepository.save(new UsersRole(user, userRoleRef));
+					// WRITE READ REPORT 권한 insu 1124
+					UsersAuthorityRef writeRef = getAuthorityRefByAuthority(MyRole.WRITE);
+					UsersAuthorityRef readRef = getAuthorityRefByAuthority(MyRole.READ);
+					UsersAuthorityRef reportRef = getAuthorityRefByAuthority(MyRole.REPORT);
+					UsersAuthority writeAuth = new UsersAuthority();
+					UsersAuthority readAuth = new UsersAuthority();
+					UsersAuthority reportAuth = new UsersAuthority();
+
+					writeAuth.setUser(savedUser);
+					writeAuth.setUsersAuthorityRef(writeRef);
+					readAuth.setUser(savedUser);
+					readAuth.setUsersAuthorityRef(readRef);
+					reportAuth.setUser(savedUser);
+					reportAuth.setUsersAuthorityRef(reportRef);
+
+					usersAuthorityRepository.save(writeAuth);
+					usersAuthorityRepository.save(readAuth);
+					usersAuthorityRepository.save(reportAuth);
 
 					// transactional 이라 토큰 발행 시 userNo이 안들어가서 여기서 토큰 발급이 의미가 없음 && 유저 닉네임 중복검사가 필요함.
 
@@ -89,6 +110,11 @@ public class UserManegementService {
 			res = new CommonResponseDTO(HttpStatus.CONFLICT, e.getMessage());
 		}
 		return res;
+	}
+
+	private UsersAuthorityRef getAuthorityRefByAuthority(String authority) {
+		return usersAuthorityRefRepository.findByAuthority(authority)
+				.orElseThrow(() -> InsuUtils.throwNewResponseStatusException("존재하지 않는 권한"));
 	}
 
 	private boolean checkUser(String id) {
