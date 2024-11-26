@@ -17,6 +17,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import site.challenger.project_challenger.dto.CommonResponseDTO;
 import site.challenger.project_challenger.dto.challenge.ChallengeRequestDTO;
+import site.challenger.project_challenger.service.ChallengeLogService;
 import site.challenger.project_challenger.service.ChallengeService;
 import site.challenger.project_challenger.util.InsuUtils;
 
@@ -25,7 +26,7 @@ import site.challenger.project_challenger.util.InsuUtils;
 @RequestMapping("/challenge")
 public class ChallengeController {
 	private final ChallengeService challengeService;
-
+	private final ChallengeLogService challengeLogService;
 	// 챌린지 추가
 	@PostMapping("/add")
 	public CommonResponseDTO addNewChallenge(Authentication authentication, HttpServletRequest request,
@@ -144,5 +145,11 @@ public class ChallengeController {
 
 		return challengeService.getPostsByChNo(requestUserNo, chNo, page);
 	}
-
+	
+	//챌린지 랭크 조회
+	@GetMapping("/rank/{chNo}")
+	public CommonResponseDTO getChallengeRank(@PathVariable long chNo) {
+		
+		return challengeLogService.getRank(chNo);
+	}
 }
