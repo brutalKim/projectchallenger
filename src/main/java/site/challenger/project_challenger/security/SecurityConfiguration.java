@@ -14,6 +14,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import site.challenger.project_challenger.constants.MyRole;
 import site.challenger.project_challenger.constants.SecurityConstants;
@@ -29,7 +30,7 @@ public class SecurityConfiguration {
 	private static final String[] SECURED_URL = { "/authentication/signup/**" };
 	private static final String[] OPEN_URL = { "springdoc.api-docs.path=/api-docs", "/swagger-ui.html",
 			"/swagger-ui/**", "/1", "/h2-console/**", "/oauth2/**", "/postimg/**", "/debug", "login/**",
-			"/authentication/signup", "/afterSuccess" };
+			"/authentication/signup", "/afterSuccess", "/admin/**", "/userProfileImg/**" };
 
 	@Bean
 	public WebSecurityCustomizer webSecurityCustomizer() { // security를 적용하지 않을 리소스
@@ -50,7 +51,9 @@ public class SecurityConfiguration {
 				.addFilterBefore(jwtTokenValidatorFilter, OAuth2LoginAuthenticationFilter.class)
 				.authorizeHttpRequests(auth -> {
 					// 모든 허용
-					auth.requestMatchers(OPEN_URL).permitAll().anyRequest().hasAnyRole(MyRole.USER, MyRole.ADMIN);
+					auth.dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll().requestMatchers("/WEB-INF/**")
+							.denyAll().requestMatchers(OPEN_URL).permitAll().anyRequest()
+							.hasAnyRole(MyRole.USER, MyRole.ADMIN);
 				})
 				//
 				.headers(headers -> headers.frameOptions(fo -> fo.sameOrigin()))
@@ -69,7 +72,8 @@ public class SecurityConfiguration {
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration config = new CorsConfiguration();
-		config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:8080")); // 허용할 출처
+		config.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:8080", "http://localhost:3001")); // 허용할
+																														// 출처
 		config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE")); // 허용할 HTTP 메서드
 		config.addAllowedHeader("*"); // 허용할 헤더
 		config.setAllowCredentials(true); // 모든 인증 허용

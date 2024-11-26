@@ -30,5 +30,6 @@ public class ChallengeResponseDTO {
 	private long postNum;
 	// 구독자가 몇 명인가
 	private long follower;
+	private String userno;
 
 }

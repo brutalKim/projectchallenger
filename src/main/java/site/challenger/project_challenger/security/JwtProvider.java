@@ -26,14 +26,13 @@ public class JwtProvider {
 	private final UsersAuthorityRepository usersAuthorityRepository;
 	private final UsersRoleRepository usersRoleRepository;
 	private final UsersAuthorityRefRepository userAuthorityRefRepository;
-	 
+
 	public JwtClaimsSet forGuest(String uid, int oauthRef) {
 		JwtClaimsSet claims = JwtClaimsSet.builder()
 				//
 				.issuer("project Challenge")
 				//
-				.issuedAt(Instant.now())
-				.expiresAt(Instant.now().plusSeconds(60 * 15))
+				.issuedAt(Instant.now()).expiresAt(Instant.now().plusSeconds(60 * 15))
 				//
 				.subject(uid)
 				//
@@ -50,22 +49,19 @@ public class JwtProvider {
 		List<UsersRole> userRoles = usersRoleRepository.findByUser(user);
 
 		String authorities = populateAuthorities(userAuthorities, userRoles);
-		
-		
+
 		JwtClaimsSet claims = JwtClaimsSet.builder()
 				//
 				.issuer("project Challenge")
 				//
 				.issuedAt(Instant.now())
 				//
-				//테스트를 위해 토큰 만료시간 한시간으로 늘림
+				// 테스트를 위해 토큰 만료시간 한시간으로 늘림
 				.expiresAt(Instant.now().plusSeconds(60 * 60))
 				//
 				.subject(user.getNo().toString())
 				//
-				.claim("authorities", authorities)
-				.claim("nickname", user.getNickname())
-				.build();
+				.claim("authorities", authorities).claim("nickname", user.getNickname()).build();
 
 		return claims;
 	}
@@ -73,8 +69,8 @@ public class JwtProvider {
 	private String populateAuthorities(List<UsersAuthority> userAuthorities, List<UsersRole> userRoles) {
 		Set<String> authoritiesSet = new HashSet<>();
 		for (UsersAuthority usersAuthority : userAuthorities) {
-			String auth = usersAuthority.getUsersAuthorityRef().getUserRoleRef();
-			authoritiesSet.add(auth); 
+			String auth = usersAuthority.getUsersAuthorityRef().getAuthority();
+			authoritiesSet.add(auth);
 		}
 		for (UsersRole usersRole : userRoles) {
 			String role = usersRole.getUserRoleRef().getRole();

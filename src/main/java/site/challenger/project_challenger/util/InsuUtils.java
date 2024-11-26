@@ -1,5 +1,6 @@
 package site.challenger.project_challenger.util;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 import org.springframework.data.domain.Page;
@@ -33,6 +34,10 @@ public class InsuUtils {
 		body.put(Common.SIZE_OF_PAGE, pagedList.getSize());
 		body.put(Common.CURRENT_PAGE, pagedList.getNumber());
 
+	}
+
+	public static boolean isOverBanned(LocalDateTime bannedDate) {
+		return bannedDate.isAfter(LocalDateTime.now());
 	}
 
 }

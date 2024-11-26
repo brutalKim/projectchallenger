@@ -16,7 +16,7 @@ public class ErrorLoggingController {
 	@PostMapping
 	public ResponseEntity<Void> testLogError(Authentication authentication, @RequestBody ErrorInfo errorInfo) {
 
-		System.out.println("받은 에러" + errorInfo);
+//		System.out.println("받은 에러" + errorInfo);
 
 		return ResponseEntity.ok().build();
 	}

@@ -32,6 +32,8 @@ import site.challenger.project_challenger.domain.PostImage;
 import site.challenger.project_challenger.domain.PostRecommend;
 import site.challenger.project_challenger.domain.PostRecommendPrimaryKey;
 import site.challenger.project_challenger.domain.Users;
+import site.challenger.project_challenger.domain.UsersAuthority;
+import site.challenger.project_challenger.domain.UsersAuthorityRef;
 import site.challenger.project_challenger.dto.CommonResponseDTO;
 import site.challenger.project_challenger.dto.post.PostDTO;
 import site.challenger.project_challenger.dto.post.PostRecommendServiceReqDTO;
@@ -45,6 +47,8 @@ import site.challenger.project_challenger.repository.PostCommentRepository;
 import site.challenger.project_challenger.repository.PostRecommendRepository;
 import site.challenger.project_challenger.repository.PostRepository;
 import site.challenger.project_challenger.repository.UserRepository;
+import site.challenger.project_challenger.repository.UsersAuthorityRefRepository;
+import site.challenger.project_challenger.repository.UsersAuthorityRepository;
 import site.challenger.project_challenger.util.InsuUtils;
 import site.challenger.project_challenger.util.PostImageManager;
 
@@ -70,6 +74,9 @@ public class PostManagementService {
 	private final PostImageManager postImageManager;
 	private final NoticeRepository noticeRepository;
 	private final CommentRecommendRepository commentRecommendRepository;
+
+	private final UsersAuthorityRepository usersAuthorityRepository;
+	private final UsersAuthorityRefRepository usersAuthorityRefRepository;
 	// Post작성
 
 	@Transactional
@@ -81,6 +88,12 @@ public class PostManagementService {
 		try {
 			Optional<Users> writer = userRepository.findById(writerId);
 			if (writer.isPresent()) {
+//				// WRITE 권한 검증 insu 1124
+//				boolean someoneHasWriteAuth = isSomeoneHasAuth(writer.get(),MyRole.WRITE);
+//				if (!someoneHasWriteAuth) {
+//					throw InsuUtils.throwNewResponseStatusException(HttpStatus.FORBIDDEN, "글쓰기 권한이 없음");
+//				}
+
 				Post post = new Post(writer.get(), content);
 				// 포스트 이미지가 존재할경우
 				if (req.getImages() != null) {
@@ -323,6 +336,13 @@ public class PostManagementService {
 			Optional<Users> optionalWriter = userRepository.findById(writerNo);
 			Optional<Post> optionalPost = postRepository.findById(postNo);
 			if (optionalWriter.isPresent() && optionalPost.isPresent()) {
+
+//				// WRITE 권한 검증 insu 1124
+//				boolean someoneHasWriteAuth = isSomeoneHasAuth(optionalWriter.get(),MyRole.WRITE);
+//				if (!someoneHasWriteAuth) {
+//					throw InsuUtils.throwNewResponseStatusException(HttpStatus.FORBIDDEN, "글쓰기 권한이 없음");
+//				}
+
 				Users user = optionalWriter.get();
 				Post post = optionalPost.get();
 				// testing
@@ -603,4 +623,36 @@ public class PostManagementService {
 		}
 		return data;
 	}
+
+	private boolean isSomeoneHasAuth(Users user, String auth) {
+		UsersAuthorityRef reportAuthRef = getAuthorityRefByAuthority(auth);
+		UsersAuthority authorityByUserAndAuthorityRef = getAuthorityByUserAndAuthorityRef(user, reportAuthRef);
+		if (authorityByUserAndAuthorityRef.getDate() == null) {
+			// 권한 문제없음
+			return true;
+		} else {
+			// 권한 문제있음
+			boolean overBanned = InsuUtils.isOverBanned(authorityByUserAndAuthorityRef.getDate());
+			if (overBanned) {
+				authorityByUserAndAuthorityRef.setComment(null);
+				authorityByUserAndAuthorityRef.setDate(null);
+				usersAuthorityRepository.save(authorityByUserAndAuthorityRef);
+				return true;
+			}
+
+			return false;
+		}
+
+	}
+
+	private UsersAuthorityRef getAuthorityRefByAuthority(String authority) {
+		return usersAuthorityRefRepository.findByAuthority(authority)
+				.orElseThrow(() -> InsuUtils.throwNewResponseStatusException("존재하지 않는 권한"));
+	}
+
+	private UsersAuthority getAuthorityByUserAndAuthorityRef(Users user, UsersAuthorityRef usersAuthorityRef) {
+		return usersAuthorityRepository.findByUserAndUsersAuthorityRef(user, usersAuthorityRef).orElseThrow(
+				() -> InsuUtils.throwNewResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "사용자가 권한을 부여받지 못했음"));
+	}
+
 }

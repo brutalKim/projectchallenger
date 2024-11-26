@@ -31,6 +31,7 @@ public class JwtTokenValidatorFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
+
 		// 헤더먼저 검사
 		String jwtToken = null;
 //		if(resolveToken(request) != null) {
@@ -66,7 +67,8 @@ public class JwtTokenValidatorFilter extends OncePerRequestFilter {
 	@Override
 	protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
 		String requestUri = request.getRequestURI();
-		return requestUri.startsWith("/login"); // "/login"으로 시작하는 URI는 필터 적용 안 함
+		return requestUri.startsWith("/login");
+		// "/login"으로시작하는// URI는/ 필터// 적용 // 안 // 함
 	}
 
 	// 쿠키 읽기

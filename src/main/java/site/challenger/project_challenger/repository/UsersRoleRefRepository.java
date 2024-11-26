@@ -10,4 +10,5 @@ import site.challenger.project_challenger.domain.UserRoleRef;
 @Repository
 public interface UsersRoleRefRepository extends JpaRepository<UserRoleRef, Long> {
 	Optional<UserRoleRef> findByRole(String string);
+
 }

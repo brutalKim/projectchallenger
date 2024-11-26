@@ -1,9 +1,11 @@
 INSERT INTO users_role_ref (role) VALUES ('ROLE_ADMIN');
 INSERT INTO users_role_ref (role) VALUES ('ROLE_USER');
 INSERT INTO users_role_ref (role) VALUES ('ROLE_GUEST');
+INSERT INTO users_role_ref (role) VALUES ('ROLE_MANAGER');
 
 INSERT INTO users_authority_ref (authority) VALUES('READ');
 INSERT INTO users_authority_ref (authority) VALUES('WRITE');
+INSERT INTO users_authority_ref (authority) VALUES('REPORT');
 
 INSERT INTO OAUTH_REF (type) VALUES('NAVER');
 INSERT INTO OAUTH_REF (type) VALUES('KAKAO');
