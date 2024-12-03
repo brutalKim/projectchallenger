@@ -63,7 +63,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 		// < 쿠키 테스트
 		Cookie jwtCookie = new Cookie("JWT_TOKEN", jwtToken);
 		jwtCookie.setHttpOnly(true);// 클라이언트에서 접근 불가
-		jwtCookie.setSecure(true); // HTTPS에서만 전송
+//		jwtCookie.setSecure(true); // HTTPS에서만 전송
 		jwtCookie.setPath("/"); // 모든 경로에서 쿠키 전송
 //		jwtCookie.setMaxAge(120);// 설정안하면 세션쿠키됨
 		response.addCookie(jwtCookie);

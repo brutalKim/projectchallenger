@@ -56,7 +56,7 @@ public class JwtTokenValidatorFilter extends OncePerRequestFilter {
 						body);
 				e.printStackTrace();
 				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-				response.getWriter().write("JWT Token is expired");
+				response.getWriter().write("JWT Token is expired,");
 				return;
 			}
 
