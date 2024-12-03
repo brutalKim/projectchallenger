@@ -20,7 +20,7 @@ import site.challenger.project_challenger.service.UserManegementService;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/authentication")
+@RequestMapping("/api/v1/authentication")
 public class AuthenticationController {
 	private final UserManegementService userManagementService;
 	private final JwtDecoder jwtDecoder;

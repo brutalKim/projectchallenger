@@ -15,7 +15,7 @@ import site.challenger.project_challenger.util.InsuUtils;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/notice")
+@RequestMapping("/api/v1/notice")
 public class NoticeController {
 
 	private final NoticeService noticeService;

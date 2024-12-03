@@ -24,7 +24,7 @@ import site.challenger.project_challenger.util.InsuUtils;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/post")
+@RequestMapping("/api/v1/post")
 public class PostController {
 	private final PostManagementService postManagementService;
 	private final UserService userService;

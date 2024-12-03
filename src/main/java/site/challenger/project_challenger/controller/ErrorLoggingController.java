@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import site.challenger.project_challenger.dto.ErrorInfo;
 
 @RestController
-@RequestMapping("/debug")
+@RequestMapping("/api/v1/debug")
 public class ErrorLoggingController {
 
 	@PostMapping

@@ -25,7 +25,7 @@ import site.challenger.project_challenger.util.InsuUtils;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/user")
+@RequestMapping("/api/v1/user")
 public class UserController {
 	private final ChallengeService challengeService;
 	private final UserService userService;
@@ -76,10 +76,10 @@ public class UserController {
 	@GetMapping("/follow")
 	public CommonResponseDTO followUser(Authentication authentication, @RequestParam(required = true) Long userNo) {
 		Long userSelfNo = Long.parseLong(authentication.getName());
-		if(userSelfNo == userNo) {
+		if (userSelfNo == userNo) {
 			return new CommonResponseDTO(HttpStatus.BAD_REQUEST);
 		}
-		return userService.followUser(userSelfNo,userNo);
+		return userService.followUser(userSelfNo, userNo);
 	}
 
 	// 유저 구독중 챌린지 조회
@@ -111,9 +111,10 @@ public class UserController {
 
 	// 키워드 기반 유저 조회
 	@GetMapping("/search")
-	public CommonResponseDTO searchUser(Authentication authentication, @RequestParam(required = true) String keyword,int page) {
+	public CommonResponseDTO searchUser(Authentication authentication, @RequestParam(required = true) String keyword,
+			int page) {
 		Long userNo = Long.parseLong(authentication.getName());
-		return userService.getUserBykeyWord(userNo, keyword,page);
+		return userService.getUserBykeyWord(userNo, keyword, page);
 	}
 
 }

@@ -27,10 +27,16 @@ public class SecurityConfiguration {
 	private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
 	private final JwtTokenValidatorFilter jwtTokenValidatorFilter;
 
-	private static final String[] SECURED_URL = { "/authentication/signup/**" };
-	private static final String[] OPEN_URL = { "springdoc.api-docs.path=/api-docs", "/swagger-ui.html",
-			"/swagger-ui/**", "/1", "/h2-console/**", "/oauth2/**", "/postimg/**", "/debug", "login/**",
-			"/authentication/signup", "/afterSuccess", "/admin/**", "/userProfileImg/**" };
+	private static final String[] SECURED_URL = { "/admin/**" };
+	/*
+	 * open url에 있던거 혹시몰라 남겨둠 "springdoc.api-docs.path=/api-docs",
+	 * "/swagger-ui.html", "/swagger-ui/**",
+	 *
+	 */
+
+	private static final String[] OPEN_URL = { "/oauth2/**", "/api/v1/postimg/**", "/api/v1/debug", "/api/v1/login/**",
+			"/api/v1/authentication/signup", "/api/v1/afterSuccess", "/userProfileImg/**", "api/v1/test/**",
+			"/admin/**" };
 
 	@Bean
 	public WebSecurityCustomizer webSecurityCustomizer() { // security를 적용하지 않을 리소스

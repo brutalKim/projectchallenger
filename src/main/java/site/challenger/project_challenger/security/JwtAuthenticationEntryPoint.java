@@ -16,6 +16,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 	public void commence(HttpServletRequest request, HttpServletResponse response,
 			AuthenticationException authException) throws IOException {
 		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 상태 코드 설정
-		response.getWriter().write("JWT Token is expired or invalid."); // 에러 메시지 설정
+		response.getWriter().write("JWT Token is expired or invalid.."); // 에러 메시지 설정
 	}
 }

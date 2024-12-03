@@ -13,7 +13,7 @@ import site.challenger.project_challenger.service.ReportService;
 import site.challenger.project_challenger.util.InsuUtils;
 
 @RestController
-@RequestMapping("/report")
+@RequestMapping("/api/v1/report")
 @RequiredArgsConstructor
 public class ReportController {
 	private final ReportService reportService;

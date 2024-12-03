@@ -4,6 +4,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -15,17 +16,18 @@ import site.challenger.project_challenger.service.AdminService;
 
 @RequiredArgsConstructor
 @Controller
+@RequestMapping("/admin")
 public class AdminController {
 
 	private final AdminService adminService;
 
-	@GetMapping("/admin")
+	@GetMapping("")
 	public String getAdminPage() {
 		return "test";
 	}
 
 	@ResponseBody
-	@GetMapping("/admin/report/posts")
+	@GetMapping("/report/posts")
 	public CommonResponseDTO getReportedPosts(@RequestParam(required = false, defaultValue = "0") int page) {
 
 		return adminService.getReportedPosts(page);
@@ -33,7 +35,7 @@ public class AdminController {
 
 	// 신고된 내역 가져오기
 	@ResponseBody
-	@GetMapping("/admin/report")
+	@GetMapping("/report")
 	public CommonResponseDTO getReports(@RequestParam(required = true) String targetkind,
 			@RequestParam(required = true) long targetno,
 			@RequestParam(required = false, defaultValue = "0") int page) {
@@ -43,7 +45,7 @@ public class AdminController {
 
 	// 신고된 내역 숫자 가져오기
 	@ResponseBody
-	@GetMapping("/admin/report/count")
+	@GetMapping("/report/count")
 	public CommonResponseDTO getReportsCount(@RequestParam(required = true) String targetkind,
 			@RequestParam(required = true) long targetno) {
 
@@ -52,7 +54,7 @@ public class AdminController {
 
 	// 신고내역 읽음 처리
 	@ResponseBody
-	@GetMapping("/admin/read/report")
+	@GetMapping("/read/report")
 	public CommonResponseDTO readReport(@RequestParam(required = true) long reportNo) {
 
 		return adminService.readReport(reportNo);
@@ -60,35 +62,35 @@ public class AdminController {
 
 	// 신고된 댓글 가져오기
 	@ResponseBody
-	@GetMapping("/admin/report/comments")
+	@GetMapping("/report/comments")
 	public CommonResponseDTO getReportedComments(@RequestParam(required = false, defaultValue = "0") int page) {
 
 		return adminService.getReportedComments(page);
 	}
 
 	@ResponseBody
-	@GetMapping("/admin/report/challenges")
+	@GetMapping("/report/challenges")
 	public CommonResponseDTO getReportedChallenges(@RequestParam(required = false, defaultValue = "0") int page) {
 
 		return adminService.getReportedChallenges(page);
 	}
 
 	@ResponseBody
-	@GetMapping("/admin/adminList")
+	@GetMapping("/adminList")
 	public CommonResponseDTO getAdminList() {
 
 		return adminService.getAdminList();
 	}
 
 	@ResponseBody
-	@GetMapping("/admin/getUser")
+	@GetMapping("/getUser")
 	public CommonResponseDTO getUserByUserNickname(@RequestParam(required = true) String nickname) {
 
 		return adminService.getUserByUserNickName(nickname);
 	}
 
 	@ResponseBody
-	@GetMapping("/admin/addAdmin")
+	@GetMapping("/addAdmin")
 	public CommonResponseDTO addAdmin(@RequestParam(required = true) String nickname) {
 
 		return adminService.addAdmin(nickname);
@@ -96,7 +98,7 @@ public class AdminController {
 	}
 
 	@ResponseBody
-	@GetMapping("/admin/deleteAdmin")
+	@GetMapping("/deleteAdmin")
 	public CommonResponseDTO deleteAdmin(@RequestParam(required = true) String nickname) {
 
 		return adminService.deleteAdmin(nickname);
@@ -104,14 +106,14 @@ public class AdminController {
 	}
 
 	@ResponseBody
-	@PostMapping("/admin/restriction")
+	@PostMapping("/restriction")
 	public CommonResponseDTO restrictUser(@Valid @RequestBody RestrictionDto restrictionDto) {
 
 		return adminService.restrictUser(restrictionDto);
 	}
 
 	@ResponseBody
-	@GetMapping("/admin/noProblem")
+	@GetMapping("/noProblem")
 	public CommonResponseDTO noProblem(@RequestParam(required = true) String targetkind,
 			@RequestParam(required = true) long targetno) {
 

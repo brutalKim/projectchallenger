@@ -23,10 +23,11 @@ import site.challenger.project_challenger.util.InsuUtils;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/challenge")
+@RequestMapping("/api/v1/challenge")
 public class ChallengeController {
 	private final ChallengeService challengeService;
 	private final ChallengeLogService challengeLogService;
+
 	// 챌린지 추가
 	@PostMapping("/add")
 	public CommonResponseDTO addNewChallenge(Authentication authentication, HttpServletRequest request,
@@ -145,11 +146,11 @@ public class ChallengeController {
 
 		return challengeService.getPostsByChNo(requestUserNo, chNo, page);
 	}
-	
-	//챌린지 랭크 조회
+
+	// 챌린지 랭크 조회
 	@GetMapping("/rank/{chNo}")
 	public CommonResponseDTO getChallengeRank(@PathVariable long chNo) {
-		
+
 		return challengeLogService.getRank(chNo);
 	}
 }
