@@ -67,6 +67,7 @@ public class JwtTokenValidatorFilter extends OncePerRequestFilter {
 	@Override
 	protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
 		String requestUri = request.getRequestURI();
+//		return true;
 		return requestUri.startsWith("/login");
 		// "/login"으로시작하는// URI는/ 필터// 적용 // 안 // 함
 	}

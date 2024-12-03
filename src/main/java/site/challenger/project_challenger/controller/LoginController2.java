@@ -16,16 +16,17 @@ public class LoginController2 {
 
 	private final LoginService loginService;
 
-	@GetMapping("/afterSuccess")
+	@GetMapping("/api/v1/afterSuccess")
 	public CommonResponseDTO loginFailed2(Authentication authentication) {
 
 		long requestUserNo = InsuUtils.getRequestUserNo(authentication);
 
 		return loginService.afterLogin(requestUserNo);
 	}
-	@GetMapping("/getuser")
-	public CommonResponseDTO getuser(Authentication authentication ,@RequestParam(required = false) Long userNo) {
-		if(userNo == null) {
+
+	@GetMapping("/api/v1/getuser")
+	public CommonResponseDTO getuser(Authentication authentication, @RequestParam(required = false) Long userNo) {
+		if (userNo == null) {
 			long requestUserNo = InsuUtils.getRequestUserNo(authentication);
 			return loginService.afterLogin(requestUserNo);
 		}

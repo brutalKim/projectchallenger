@@ -12,7 +12,7 @@ import site.challenger.project_challenger.service.FollowService;
 import site.challenger.project_challenger.util.InsuUtils;
 
 @RestController
-@RequestMapping("/follow")
+@RequestMapping("/api/v1/follow")
 @RequiredArgsConstructor
 public class FollowController {
 
