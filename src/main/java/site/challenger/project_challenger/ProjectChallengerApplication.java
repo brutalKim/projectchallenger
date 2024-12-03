@@ -16,5 +16,5 @@ public class ProjectChallengerApplication {
 	@Bean
 	public HiddenHttpMethodFilter hiddenHttpMethodFilter() {
 		return new HiddenHttpMethodFilter();
-	}
+	} 
 }
