@@ -1,5 +1,9 @@
 package site.challenger.project_challenger.controller;
 
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,9 +25,25 @@ public class AdminController {
 
 	private final AdminService adminService;
 
-	@GetMapping("")
+	@GetMapping("/main")
 	public String getAdminPage() {
-		return "test";
+		return "/admin/index.html";
+	}
+
+	@GetMapping("/css")
+	public ResponseEntity<Resource> getCssFile() {
+		Resource resource = new ClassPathResource("static/admin/admin.css");
+
+		return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, "text/css").body(resource);
+	}
+
+	@GetMapping("/js")
+	public ResponseEntity<Resource> getJsFile() {
+
+		Resource resource = new ClassPathResource("static/admin/admin.js");
+
+		return ResponseEntity.ok().header(HttpHeaders.CONTENT_TYPE, "application/javascript").body(resource);
+
 	}
 
 	@ResponseBody

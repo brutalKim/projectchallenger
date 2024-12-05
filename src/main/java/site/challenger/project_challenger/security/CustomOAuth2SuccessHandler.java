@@ -63,18 +63,22 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 		// < 쿠키 테스트
 		Cookie jwtCookie = new Cookie("JWT_TOKEN", jwtToken);
 		jwtCookie.setHttpOnly(true);// 클라이언트에서 접근 불가
-//		jwtCookie.setSecure(true); // HTTPS에서만 전송
+		jwtCookie.setSecure(true); // HTTPS에서만 전송
 		jwtCookie.setPath("/"); // 모든 경로에서 쿠키 전송
+
+		System.out.println("cookies");
+
 //		jwtCookie.setMaxAge(120);// 설정안하면 세션쿠키됨
+
 		response.addCookie(jwtCookie);
 		// 쿠키 >
 
 		logger.info("\n IP: {}\n Body: {} \n", request.getRemoteAddr(),
 				jwtToken.substring(jwtToken.indexOf('.') + 1, jwtToken.lastIndexOf('.')));
 		if (isUser) {
-			response.sendRedirect("http://localhost:3000/success");
+			response.sendRedirect("/success");
 		} else {
-			response.sendRedirect("http://localhost:3000/signup");
+			response.sendRedirect("/signup");
 		}
 	}
 }

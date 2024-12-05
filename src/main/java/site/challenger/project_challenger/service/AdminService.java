@@ -255,7 +255,7 @@ public class AdminService {
 			dto.setDate(userAdmin.getSignupDate());
 			dto.setIsadmin(isSomeoneAdmin(userAdmin));
 			dto.setNickname(userAdmin.getNickname());
-			dto.setRecentdate(userAdmin.getSignupDate());
+			dto.setRecentdate(userAdmin.getLatestLoginDate());
 			dto.setUserno(userAdmin.getNo().toString());
 
 			responseList.add(dto);

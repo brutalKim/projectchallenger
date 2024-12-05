@@ -37,10 +37,10 @@ public class ReportService {
 	public CommonResponseDTO report(long reportUserNo, ReportRequestDto reportRequestDto) {
 		Users reportUser = getUserbyUserNo(reportUserNo);
 
-//		boolean someoneHasReportAuth = isSomeoneHasReportAuth(reportUser);
-//		if (!someoneHasReportAuth) {
-//			throw InsuUtils.throwNewResponseStatusException(HttpStatus.FORBIDDEN, "신고 권한이 없음");
-//		}
+		boolean someoneHasReportAuth = isSomeoneHasReportAuth(reportUser);
+		if (!someoneHasReportAuth) {
+			throw InsuUtils.throwNewResponseStatusException(HttpStatus.FORBIDDEN, "신고 권한이 없음");
+		}
 
 		Users targetUser = null;
 		if (reportRequestDto.getTargetUserNo() != 0) {

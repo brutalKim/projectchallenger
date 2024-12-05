@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import site.challenger.project_challenger.constants.MyRole;
 import site.challenger.project_challenger.domain.Challenge;
 import site.challenger.project_challenger.domain.ChallengeHasPost;
 import site.challenger.project_challenger.domain.ChallengeRecommend;
@@ -69,11 +70,11 @@ public class ChallengeService {
 
 		Users user = getUserByUserNo(requestUserNo);
 
-//		// WRITE 권한 검증 insu 1124
-//		boolean someoneHasWriteAuth = isSomeoneHasAuth(user,MyRole.WRITE);
-//		if (!someoneHasWriteAuth) {
-//			throw InsuUtils.throwNewResponseStatusException(HttpStatus.FORBIDDEN, "챌린지 생성 권한이 없음");
-//		}
+		// WRITE 권한 검증 insu 1124
+		boolean someoneHasWriteAuth = isSomeoneHasAuth(user, MyRole.WRITE);
+		if (!someoneHasWriteAuth) {
+			throw InsuUtils.throwNewResponseStatusException(HttpStatus.FORBIDDEN, "챌린지 생성 권한이 없음");
+		}
 
 		Challenge challenge = new Challenge();
 		challenge.setUsers(user);
