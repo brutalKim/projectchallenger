@@ -35,7 +35,6 @@ public class LoginService {
 		Users requestUser = getUserByUserNo(requestUserNo);
 		requestUser.setLatestLoginDate(LocalDateTime.now());
 		requestUser = userRepository.save(requestUser);
-
 		AfterLoginInfoDTO afterLoginInfoDTO = new AfterLoginInfoDTO();
 
 		afterLoginInfoDTO.setUserNo(requestUserNo);

@@ -20,6 +20,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import site.challenger.project_challenger.constants.Common;
+import site.challenger.project_challenger.constants.MyRole;
 import site.challenger.project_challenger.domain.Challenge;
 import site.challenger.project_challenger.domain.ChallengeHasPost;
 import site.challenger.project_challenger.domain.CommentRecommend;
@@ -88,11 +89,11 @@ public class PostManagementService {
 		try {
 			Optional<Users> writer = userRepository.findById(writerId);
 			if (writer.isPresent()) {
-//				// WRITE 권한 검증 insu 1124
-//				boolean someoneHasWriteAuth = isSomeoneHasAuth(writer.get(),MyRole.WRITE);
-//				if (!someoneHasWriteAuth) {
-//					throw InsuUtils.throwNewResponseStatusException(HttpStatus.FORBIDDEN, "글쓰기 권한이 없음");
-//				}
+				// WRITE 권한 검증 insu 1124
+				boolean someoneHasWriteAuth = isSomeoneHasAuth(writer.get(), MyRole.WRITE);
+				if (!someoneHasWriteAuth) {
+					throw InsuUtils.throwNewResponseStatusException(HttpStatus.FORBIDDEN, "글쓰기 권한이 없음");
+				}
 
 				Post post = new Post(writer.get(), content);
 				// 포스트 이미지가 존재할경우
@@ -337,11 +338,11 @@ public class PostManagementService {
 			Optional<Post> optionalPost = postRepository.findById(postNo);
 			if (optionalWriter.isPresent() && optionalPost.isPresent()) {
 
-//				// WRITE 권한 검증 insu 1124
-//				boolean someoneHasWriteAuth = isSomeoneHasAuth(optionalWriter.get(),MyRole.WRITE);
-//				if (!someoneHasWriteAuth) {
-//					throw InsuUtils.throwNewResponseStatusException(HttpStatus.FORBIDDEN, "글쓰기 권한이 없음");
-//				}
+				// WRITE 권한 검증 insu 1124
+				boolean someoneHasWriteAuth = isSomeoneHasAuth(optionalWriter.get(), MyRole.WRITE);
+				if (!someoneHasWriteAuth) {
+					throw InsuUtils.throwNewResponseStatusException(HttpStatus.FORBIDDEN, "글쓰기 권한이 없음");
+				}
 
 				Users user = optionalWriter.get();
 				Post post = optionalPost.get();
