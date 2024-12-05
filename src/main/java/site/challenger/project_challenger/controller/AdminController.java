@@ -23,7 +23,7 @@ public class AdminController {
 
 	@GetMapping("")
 	public String getAdminPage() {
-		return "test";
+		return "admin";
 	}
 
 	@ResponseBody
